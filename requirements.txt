@@ -1,0 +1,34 @@
+# ── Deep Learning for Data Science — shared environment ──
+# Install:  .venv/bin/pip install -r requirements.txt
+
+# Core scientific stack
+numpy
+pandas
+scipy
+matplotlib
+seaborn
+
+# Classical ML
+scikit-learn
+
+# UCI dataset helper 
+ucimlrepo
+
+# Kaggle dataset access
+kagglehub
+
+# Deep learning frameworks
+torch
+torchvision
+torchaudio
+tensorflow
+keras
+
+# Notebook / Jupyter tooling
+jupyter
+ipykernel
+notebook
+
+# Utilities
+tqdm
+pillow
