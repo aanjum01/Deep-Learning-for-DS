@@ -1,0 +1,17 @@
+# Phase 5b sanity + LinUCB alpha tuning on MIND-small (plan Q21-Q23).
+# One pass over each seed's 90% of users; tuning seeds 100-102 (0-9 reserved for reported results).
+# alpha grid = Forest Cover's (phase2_tune_alpha.yaml); best alpha = highest total reward over the pass.
+name: phase5_mind_tune
+env: mind_small
+seeds: [100, 101, 102]
+# d = 19: 18 category shares + constant 1 (plan Q13, Q16); policies with a context size need it
+algorithms:
+  - {label: Random, class: RandomPolicy, params: {}}
+  - {label: Popularity, class: PopularityPolicy, params: {}}  # hindsight reference line, not a baseline
+  - {label: LinUCB_a0.01, class: LinUCB, params: {alpha: 0.01, d: 19}}
+  - {label: LinUCB_a0.05, class: LinUCB, params: {alpha: 0.05, d: 19}}
+  - {label: LinUCB_a0.1, class: LinUCB, params: {alpha: 0.1, d: 19}}
+  - {label: LinUCB_a0.25, class: LinUCB, params: {alpha: 0.25, d: 19}}
+  - {label: LinUCB_a0.5, class: LinUCB, params: {alpha: 0.5, d: 19}}
+  - {label: LinUCB_a1, class: LinUCB, params: {alpha: 1, d: 19}}
+  - {label: LinUCB_a2, class: LinUCB, params: {alpha: 2, d: 19}}

@@ -1,0 +1,4 @@
+       last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                             
+NB2             0.692764          0.009374              740.079026
+NB3             0.644051          0.017452             1152.533826

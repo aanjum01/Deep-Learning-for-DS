@@ -1,0 +1,8 @@
+name: phase2_drift
+steps: 2250000
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+drift_every: 500000
+algorithms:
+  - {label: Random, class: RandomPolicy, params: {}}
+  # alpha = 0.1: best mean last-100k accuracy in phase2_tune_alpha (Nov 15); all alphas 71.7-71.9%
+  - {label: LinUCB, class: LinUCB, params: {alpha: 0.1}}

@@ -1,0 +1,12 @@
+name: phase2_tune_alpha
+steps: 500000
+seeds: [100, 101, 102]
+drift_every: null
+algorithms:
+  - {label: LinUCB_a0.01, class: LinUCB, params: {alpha: 0.01}}
+  - {label: LinUCB_a0.05, class: LinUCB, params: {alpha: 0.05}}
+  - {label: LinUCB_a0.1, class: LinUCB, params: {alpha: 0.1}}
+  - {label: LinUCB_a0.25, class: LinUCB, params: {alpha: 0.25}}
+  - {label: LinUCB_a0.5, class: LinUCB, params: {alpha: 0.5}}
+  - {label: LinUCB_a1, class: LinUCB, params: {alpha: 1}}
+  - {label: LinUCB_a2, class: LinUCB, params: {alpha: 2}}

@@ -1,0 +1,8 @@
+name: phase4_drift
+steps: 2250000
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+drift_every: 500000
+algorithms:
+  # paper §5 p. 5: C in {1,5,25,50,100}, lambda in {0.01,0.1,1}, gamma = 0.005, gamma_model = 0.1
+  - {label: NB2, class: NeuralBandit2, params: {hidden: [1, 5, 25, 50, 100], lam: [0.01, 0.1, 1], gamma: 0.005, gamma_model: 0.1}}
+  - {label: NB3, class: NeuralBandit3, params: {hidden: [1, 5, 25, 50, 100], lam: [0.01, 0.1, 1], gamma: 0.005, gamma_model: 0.1}}

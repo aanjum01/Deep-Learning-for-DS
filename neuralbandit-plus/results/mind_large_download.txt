@@ -1,0 +1,12 @@
+downloading MINDlarge_train.zip
+MINDlarge_train.zip   531,360,717 B  sha256 7e7da0ecc45db1d8769eebf92301675e7af443b0d5266ac12b6e102bb8399233
+  large/train/behaviors.tsv  1,373,844,151 B  sha256 886505b6e8b753fe6bc2d8988d959c2cb5865d85832829d0ad91fdfb54e17548
+  large/train/entity_embedding.vec    40,305,151 B  sha256 58c2e488cbe254dd504e8341f4dcdebcc1ea85eff3c931f214d91b42370799a3
+  large/train/news.tsv    84,881,998 B  sha256 8d16f3e4df6ac8d8943c5f29e9155d0daf73047f1e41d37133013fe0e19953e9
+  large/train/relation_embedding.vec     1,044,588 B  sha256 d1bd69f5572714402ca5a3456a0c5f77750444c2f8d9144b0690ce094ad4c12a
+downloading MINDlarge_dev.zip
+MINDlarge_dev.zip   103,592,887 B  sha256 67b0437b48b6baee5655b6063a56d29edbcc92308fc0140555b0ae27263cf9e9
+  large/dev/behaviors.tsv   230,662,527 B  sha256 7031ced7b8de5183c1bf2c4a303018df8a49d858714597421d9489e571d87b45
+  large/dev/entity_embedding.vec    31,958,202 B  sha256 be95f988abc4c086ad7bea3d3beb022bcda5f03f2eef4404c0b31de9e64fa8bc
+  large/dev/news.tsv    59,055,351 B  sha256 03ba5f02160672500bf5f1af6dd18e8f99830a845b08ca9fd9fbbc9bdd72baff
+  large/dev/relation_embedding.vec     1,044,588 B  sha256 d1bd69f5572714402ca5a3456a0c5f77750444c2f8d9144b0690ce094ad4c12a

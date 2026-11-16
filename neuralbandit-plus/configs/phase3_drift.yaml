@@ -1,0 +1,7 @@
+name: phase3_drift
+steps: 2250000
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+drift_every: 500000
+algorithms:
+  # hidden=100, lam=1: best mean last-100k accuracy in phase3_tune_nb1 (77.5%, Nov 15); C=50,lam=1 77.5% close second
+  - {label: NB1, class: NeuralBandit1, params: {hidden: 100, lam: 1, gamma: 0.005}}

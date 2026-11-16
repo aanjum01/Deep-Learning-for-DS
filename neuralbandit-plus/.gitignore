@@ -1,0 +1,38 @@
+# ── Data (recreated by scripts/download_*.py and scripts/preprocess_*.py) ──
+data/*
+!data/README.md
+
+# ── Python environment & caches ──
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# ── Secrets ──
+.env
+.env.*
+
+# ── Large / temporary experiment artifacts ──
+# results/ is committed (CSVs, figures, tables, cached LLM responses);
+# only scratch output and model checkpoints are ignored.
+results/tmp/
+results/raw/
+*.pt
+*.ckpt
+
+# ── LaTeX build files ──
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
+
+# ── OS / editor ──
+.DS_Store
+.vscode/
+.idea/

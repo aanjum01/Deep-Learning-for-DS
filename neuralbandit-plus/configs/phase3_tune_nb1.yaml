@@ -1,0 +1,21 @@
+name: phase3_tune_nb1
+steps: 500000
+seeds: [100, 101, 102]
+drift_every: null
+# grid: C in {1,5,25,50,100} x lambda in {0.01,0.1,1} [allesiardo2014, §5, p. 5] (plan D5)
+algorithms:
+  - {label: NB1_C1_lam0.01, class: NeuralBandit1, params: {hidden: 1, lam: 0.01, gamma: 0.005}}
+  - {label: NB1_C1_lam0.1, class: NeuralBandit1, params: {hidden: 1, lam: 0.1, gamma: 0.005}}
+  - {label: NB1_C1_lam1, class: NeuralBandit1, params: {hidden: 1, lam: 1, gamma: 0.005}}
+  - {label: NB1_C5_lam0.01, class: NeuralBandit1, params: {hidden: 5, lam: 0.01, gamma: 0.005}}
+  - {label: NB1_C5_lam0.1, class: NeuralBandit1, params: {hidden: 5, lam: 0.1, gamma: 0.005}}
+  - {label: NB1_C5_lam1, class: NeuralBandit1, params: {hidden: 5, lam: 1, gamma: 0.005}}
+  - {label: NB1_C25_lam0.01, class: NeuralBandit1, params: {hidden: 25, lam: 0.01, gamma: 0.005}}
+  - {label: NB1_C25_lam0.1, class: NeuralBandit1, params: {hidden: 25, lam: 0.1, gamma: 0.005}}
+  - {label: NB1_C25_lam1, class: NeuralBandit1, params: {hidden: 25, lam: 1, gamma: 0.005}}
+  - {label: NB1_C50_lam0.01, class: NeuralBandit1, params: {hidden: 50, lam: 0.01, gamma: 0.005}}
+  - {label: NB1_C50_lam0.1, class: NeuralBandit1, params: {hidden: 50, lam: 0.1, gamma: 0.005}}
+  - {label: NB1_C50_lam1, class: NeuralBandit1, params: {hidden: 50, lam: 1, gamma: 0.005}}
+  - {label: NB1_C100_lam0.01, class: NeuralBandit1, params: {hidden: 100, lam: 0.01, gamma: 0.005}}
+  - {label: NB1_C100_lam0.1, class: NeuralBandit1, params: {hidden: 100, lam: 0.1, gamma: 0.005}}
+  - {label: NB1_C100_lam1, class: NeuralBandit1, params: {hidden: 100, lam: 1, gamma: 0.005}}

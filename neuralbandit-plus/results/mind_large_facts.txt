@@ -1,0 +1,60 @@
+== Files (large) ==
+train: 2,232,748 impressions, 711,222 users, 2019-11-09 00:00:00 → 2019-11-14 23:59:59
+dev: 376,471 impressions, 255,990 users, 2019-11-15 00:00:00 → 2019-11-15 23:59:43
+identical impressions in both files (user+time+list): 6
+users in both files: 216,778
+total: 2,609,219 impressions, 750,434 users; news: 104,151
+steps per run after the 90% user cut ≈ 2,348,297
+
+== Impressions ==
+articles shown per impression: p0=2 p10=4 p50=24 p90=92 p99=169 p100=300
+clicks per impression: p0=1 p10=1 p50=1 p90=3 p99=6 p100=51
+zero-click impressions: 0
+CTR (clicks / shown articles): 0.0406
+shown news IDs missing from news.tsv: 0
+
+== Categories (arms) ==
+categories in news.tsv: 18; shown in impressions: 16
+categories shown per impression: p0=1 p10=3 p50=10 p90=13 p99=14 p100=15 mean=8.70
+mean share of arms shown per impression: 54.4%
+     category  shown_in  reward1_share  reward_if_shown
+         news    0.9605         0.3571           0.3718
+       sports    0.8312         0.1805           0.2172
+    lifestyle    0.8062         0.1636           0.2029
+      finance    0.7429         0.1106           0.1489
+        music    0.7325         0.0912           0.1245
+           tv    0.6474         0.0868           0.1340
+entertainment    0.6234         0.0602           0.0965
+ foodanddrink    0.5646         0.0652           0.1155
+       health    0.5457         0.0635           0.1164
+       travel    0.5398         0.0475           0.0879
+        autos    0.5126         0.0419           0.0817
+       movies    0.4283         0.0290           0.0677
+      weather    0.4217         0.0282           0.0669
+        video    0.3421         0.0280           0.0820
+         kids    0.0009         0.0000           0.0301
+ northamerica    0.0002         0.0000           0.0305
+Random's expected reward (mean clicked-shown ÷ shown categories): 0.2044
+best-available oracle reward (= share of impressions with a click): 1.0000
+
+== Users & history ==
+impressions per user: p0=1 p10=1 p50=2 p90=7 p99=17 p100=107 mean=3.48
+history length: p0=0 p10=4 p50=19 p90=79 p99=193 p100=801
+empty histories: 57,335
+history news IDs missing from news.tsv: 0 of 79,937
+users with >1 impression: 533,415; of them with >1 distinct History: 0
+
+== Natural drift: click share per category per day ==
+            news  sports  lifestyle  finance  music    tv  foodanddrink  health
+2019-11-09 0.405   0.104      0.136    0.069  0.047 0.185         0.070   0.066
+2019-11-10 0.407   0.129      0.116    0.060  0.248 0.054         0.049   0.048
+2019-11-11 0.351   0.253      0.091    0.092  0.077 0.147         0.051   0.055
+2019-11-12 0.386   0.183      0.120    0.219  0.076 0.056         0.048   0.060
+2019-11-13 0.363   0.120      0.217    0.103  0.098 0.058         0.069   0.077
+2019-11-14 0.330   0.112      0.207    0.113  0.094 0.071         0.084   0.075
+2019-11-15 0.298   0.308      0.234    0.053  0.051 0.073         0.085   0.056
+impressions per day: {'2019-11-09': 192552, '2019-11-10': 212343, '2019-11-11': 464467, '2019-11-12': 478375, '2019-11-13': 453494, '2019-11-14': 431517, '2019-11-15': 376471}
+
+== Small vs large (Q22) ==
+small users: 94,057; of them in large: 94,057
+large minus small's users: 2,270,818 impressions, 656,377 users (≈ 2,043,736 steps per run after the 90% cut)
