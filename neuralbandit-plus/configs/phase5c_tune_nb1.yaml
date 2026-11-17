@@ -1,0 +1,21 @@
+# Phase 5c Q1: NB1 tuning on MIND-small (plan phase-5c.md). Paper grid C x lambda [allesiardo2014, §5, p. 5],
+# gamma = 0.005 (paper, Q2), d = 19 (Phase 5 Q13/Q16). Tuning seeds 100-102; winner = best total reward.
+name: phase5c_tune_nb1
+env: mind_small
+seeds: [100, 101, 102]
+algorithms:
+  - {label: NB1_C1_lam0.01, class: NeuralBandit1, params: {hidden: 1, lam: 0.01, gamma: 0.005, d: 19}}
+  - {label: NB1_C1_lam0.1, class: NeuralBandit1, params: {hidden: 1, lam: 0.1, gamma: 0.005, d: 19}}
+  - {label: NB1_C1_lam1, class: NeuralBandit1, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19}}
+  - {label: NB1_C5_lam0.01, class: NeuralBandit1, params: {hidden: 5, lam: 0.01, gamma: 0.005, d: 19}}
+  - {label: NB1_C5_lam0.1, class: NeuralBandit1, params: {hidden: 5, lam: 0.1, gamma: 0.005, d: 19}}
+  - {label: NB1_C5_lam1, class: NeuralBandit1, params: {hidden: 5, lam: 1, gamma: 0.005, d: 19}}
+  - {label: NB1_C25_lam0.01, class: NeuralBandit1, params: {hidden: 25, lam: 0.01, gamma: 0.005, d: 19}}
+  - {label: NB1_C25_lam0.1, class: NeuralBandit1, params: {hidden: 25, lam: 0.1, gamma: 0.005, d: 19}}
+  - {label: NB1_C25_lam1, class: NeuralBandit1, params: {hidden: 25, lam: 1, gamma: 0.005, d: 19}}
+  - {label: NB1_C50_lam0.01, class: NeuralBandit1, params: {hidden: 50, lam: 0.01, gamma: 0.005, d: 19}}
+  - {label: NB1_C50_lam0.1, class: NeuralBandit1, params: {hidden: 50, lam: 0.1, gamma: 0.005, d: 19}}
+  - {label: NB1_C50_lam1, class: NeuralBandit1, params: {hidden: 50, lam: 1, gamma: 0.005, d: 19}}
+  - {label: NB1_C100_lam0.01, class: NeuralBandit1, params: {hidden: 100, lam: 0.01, gamma: 0.005, d: 19}}
+  - {label: NB1_C100_lam0.1, class: NeuralBandit1, params: {hidden: 100, lam: 0.1, gamma: 0.005, d: 19}}
+  - {label: NB1_C100_lam1, class: NeuralBandit1, params: {hidden: 100, lam: 1, gamma: 0.005, d: 19}}

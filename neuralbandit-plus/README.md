@@ -187,7 +187,9 @@ A partial, unlicensed implementation by the original first author ([TheAmazingEl
 - [ ] NeuralUCB + sliding window + rule-based controller
 - [x] MIND environment (category arms, masking) — LinUCB 43.7% clicks vs. popularity 36.0%, Random 19.9% (MIND-small, α = 0.5)
 - [ ] LLM controller and agents
-- [ ] E3/E4, ablations, statistics, figures
+- [x] Baselines on MIND E3 (real week, MIND-large, 10 seeds): NB1 46.0%, NB2 45.6%, LinUCB 44.7%, NB3 43.6% clicks (popularity 37.2%, Random 20.4%)
+- [ ] E4 (planted shifts) design + baselines
+- [ ] E3/E4 for the new method, ablations, statistics, figures
 - [ ] Paper (ACM WWW format, due Dec 1, 2026)
 - [ ] Presentation and demo (Dec 14, 2026)
 

@@ -137,7 +137,8 @@ algorithms/ models/ exploration/ nonstationary/ llm/ evaluation/
   category shares of history + the user's earlier in-week clicks, + constant 1); chronological, one pass,
   each seed keeps a random 90% of users. Tune on `mind_small`, report on `mind_large` (= large minus
   small's users). Dynamic regret = steps − reward on MIND (every impression has a click). MIND configs
-  must set `d: 19` (runner checks). LinUCB α = 0.5 on MIND (tuned Nov 16).
+  must set `d: 19` (runner checks). LinUCB α = 0.5 on MIND (tuned Nov 16). NB1 on MIND: C = 1, λ = 1
+  (tuned Nov 16, Phase 5c); NB2/NB3: paper grid, γ = 0.005, γ_model = 0.1. E3 results: phase5c_mind_e3.
 - Reference repo TheAmazingElys/NeuralBandit: no license, unfinished (no NB2/NB3), never copy code,
   and **never a source for any decision** — the 2014 paper is the source of truth; where the repo
   differs (biases, no importance weighting, momentum, γ = 0.05), follow the paper (user, Nov 15).

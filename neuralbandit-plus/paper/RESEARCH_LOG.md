@@ -30,6 +30,21 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
   LinUCB 72%, Banditron 57% (p. 6). Drift results are qualitative only (pp. 6–7). NB1 is not plotted
   in Figure 1. Figure 1 x-axis runs to ~2.25M steps (stationary panel).
 
+- 📄 *(Nov 15, audit Nov 16)* **The paper hedges NB3's robustness:** NB3 "seem[s] to be more robust to
+  nonstationarity" (p. 7). Our results don't show an NB3 advantage: on Forest Cover drift NB3 beats
+  LinUCB but trails NB2 (0.696M vs 0.497M regret), and on MIND E3 it is the weakest learner — cite the
+  hedge, not a firm claim (plans/phase-4.md §1).
+- 📄 *(audit Nov 16)* **The paper states NeuralBandit has no regret bound** (non-convex cost, §6, p. 7; C13)
+  — the contrast with NeuralUCB's guarantee that motivates our method.
+- 📄 *(Nov 15)* **EXP3 as used** (Eq. 2–3, p. 5): weights start at 1; P(m) = (1−γ_model)·w_m/Σw + γ_model/M;
+  only the drawn model's weight changes, w_m ← w_m·exp(γ_model·y/(P(m)·M)), reward y ∈ {0,1}. NB2/NB3 need
+  no tuning phase: the paper gives every setting (plans/phase-4.md §2–3).
+- 📄 *(Nov 12, REFERENCES_VERIFICATION R2, C14–C16)* **NeuralUCB facts for the method section:** regret
+  Õ(d̃√T) (Thm 4.5; headline Remark 4.8, Eq. 4.5; the abstract writes Õ(√T) with d̃ suppressed — our README
+  had that wrong); effective dimension d̃ = log det(I + H/λ) / log(1 + TK/λ) (Def. 4.3, Eq. 4.1); on
+  **real** data Zhou et al. approximate Z_t by its diagonal for cost, not on synthetic data (§7.2 vs §7.1)
+  — relevant to our NeuralUCB build.
+
 ## 3. Reproduction: ambiguities in the paper and our choices (paper "Reproduction setup")
 
 - 🔍 *(Nov 13; superseded Nov 15 — see §7)* **Eq. 1 vs. Algorithm 1 disagree:** Eq. 1 updates the *greedy* action; Alg. 1 updates
@@ -125,6 +140,23 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
 - 🔍 *(Nov 15)* Under the 0.93 reference, Random's expected regret slope is 0.93 − 1/7 ≈ 0.79/step
   (≈1.8M at 2.25M steps), consistent with Figure 1's Random line ending near 2M.
 
+- ⚖️ *(Nov 15, Phase 2 Q1 → D1)* **The regret reference is our reading:** the paper says regret is
+  "computed from the rewards of an offline algorithm fitting the data with 93% of classification" (§5,
+  p. 5) and never names that algorithm or says the reference is constant per step; we use a constant
+  0.93 per step (user decision) — state it as an interpretation (plans/phase-2.md §3/§6; C2).
+- ⚖️ *(Nov 15, Phase 4)* **NB2/NB3 implementation defaults not in the paper:** one seeded rng feeds the 15
+  models' initial weights, EXP3 draws and ε-greedy draws; committee start weights are not matched to the
+  standalone NB1 runs; ties (incl. across models in NB3's argmax) broken uniformly at random; NB2's
+  logged action probability is the true mixture Σ_m P_model(m)·P_m(k), while its update weight uses
+  1/P_{m_t}(k̂) (plans/phase-4.md §3–4).
+- ⚖️ *(Nov 15, user)* **Faithfulness rule:** the 2014 paper is the source of truth; the author's repo is
+  never a source for any decision — where it differs (biases, no importance weighting, momentum,
+  γ = 0.05) we follow the paper. **Process rule:** every paper ambiguity goes to the user as a decision,
+  never assumed (CLAUDE.md).
+- ⚖️ *(Nov 15, Phase 5 Q16)* On MIND the constant-1 input is the only bias-like input of NB1/2/3, so it
+  acts like a first-layer bias the 2014 networks don't have — a deliberate, documented MIND input choice
+  (follows LinUCB's news experiment, C24), not a change to the networks.
+
 ## 4. Data & environment (paper "Experimental setup")
 
 - 📄 *(Nov 13)* Forest Cover Type, UCI (Blackard, 1998; DOI 10.24432/C50K5N; CC BY 4.0):
@@ -152,7 +184,7 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
   `Recommenders/MIND` (used by Microsoft's `recommenders` library) is open; the old Azure blob is dead
   (HTTP 409). Zip sizes differ by ~0.08% between the two HF copies (re-zipped) → we use the open copy,
   record SHA-256 + row counts, and compare unzipped files once against the official copy.
-- 📄 *(Nov 16)* **License** (MSR License Terms, read in full): research use and publishing results allowed
+- 📄 *(Nov 15)* **License** (MSR License Terms, read in full): research use and publishing results allowed
   if "no material portion of the Dataset" is included; **distribution forbidden**; accepted by use.
   User agreed. → no MIND data (raw or processed) in git; no real rows in the paper/demo.
 - 📄 *(Nov 15)* **Time span:** small and large both have usable impressions only for **week 5** (≈ 1 week,
@@ -227,6 +259,26 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
   - **Q22 split works:** all 94,057 small users are in large; large minus them = 2,270,818 impressions,
     656,377 users → ≈ 2.04M steps per run after the 90% cut (Forest Cover runs: 2.25M).
 
+- 📄 *(audit Nov 16; REFERENCES_VERIFICATION C17–C20)* **MIND paper facts for context:** full MIND =
+  1,000,000 users, 161,013 news, **20 categories**, 15,777,377 impressions, 24,155,470 clicks (R7 Table 2,
+  p. 3600); 6 weeks Oct 12 – Nov 22 2019, users with ≥ 5 clicks; training = week 5, validation = its last
+  day, test = week 6 (labels hidden), history from weeks 1–4, only non-empty histories kept (§3.1).
+  Categories: **20 in the MIND paper (full MIND) vs 18 in our news.tsv vs 16 ever shown** (= our arms).
+  The site's "50,000 users" for MIND-small (C20, one source) is per file — 94,057 distinct (C25); cite carefully.
+- ⚖️ *(Nov 15, Phase 5 Q9, fixed before seeing data)* Arm rule = every category ever shown; no merging, no
+  top-K. kids (0.09%) and northamerica (0.02%) stay — with masking they are almost never available, so they
+  cost only compute.
+- ⚖️ *(Nov 15, Phase 5 Q10)* **Reward-definition limitations to state:** what a user would have done with an
+  unshown category is unknown (counterfactual); a category shown many times in one impression has more
+  chances of a click; Li et al.'s replay estimator is not used because MSN's logging policy was not
+  uniformly random.
+- 🔍 *(Nov 16, data review)* **Masking evidence:** 8.7 of 16 categories shown per impression (54%, below
+  the 80% cut-off agreed in Q11), 10% of impressions show ≤ 3 → without masking about half the arms would
+  be fake zeros each step. **Constant-1 evidence:** 57,335 empty-history impressions on large (2.2%),
+  5,452 on small → the constant is actually needed (cold start); those impressions are kept.
+- ⚖️ *(Nov 15–16, Phase 5 Q7/Q22)* Protocol: algorithms learn from scratch in every run; only chosen
+  settings carry over from small to large; each seed leaves out 10% of users (≈ 66k on large).
+
 ## 5. Scope & experimental design decisions
 
 - ⚖️ *(Nov 12)* Instructor's success criterion: cumulative regret vs. the paper's Figure 1; NeuralBandit
@@ -248,6 +300,25 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
   adaptation-time test — adaptation time needs a known drift moment; **E3** (real week, untouched) is the
   real-behaviour check. Revisit after the data review.
 - ⚖️ *(Nov 16, Phase 5 Q26)* Article-level (shared-network) MIND formulation → future work.
+- ⚖️ *(Nov 16, Phase 5c plan, all decided with the user; full text in `paper/plans/phase-5c.md` §8)*
+  **How the MIND baselines were run (paper "Experimental setup"):**
+  - Tuning budget = only what the paper leaves open: NB1's C and λ re-tuned on MIND-small over the paper's
+    15-setting grid (seeds 100–102, best total reward); LinUCB's α likewise (Phase 5b). The paper's
+    γ = 0.005 and γ_model = 0.1 kept unchanged — NB stays the published algorithm, and the abstract's gap
+    is exactly NB's *fixed* exploration. NB2/NB3 use the paper's full 15-model grid, nothing tuned.
+    Paper sentence: "we use the paper's γ, γ_model and tune only the settings it leaves open".
+  - 10 seeds (0–9) as on Forest Cover; popularity line included as a labelled hindsight reference.
+  - Success on MIND is not pass/fail on "NB beats LinUCB" (no instructor criterion exists for MIND; making
+    it pass/fail would invite tuning toward a result). Done-check = runs complete and finite, Random ≈ its
+    analytic value, outputs produced.
+  - Statistics: mean ± std now; significance tests in one later step for all experiments (paired over
+    seeds is possible: every algorithm sees the same users within a seed; per-step rewards are kept in
+    `results/raw/`, local only).
+  - Figures: day boundaries on the regret plot = mean day-start step over seeds (seeds differ by ≤ 2,436
+    steps = 0.12% of a run); the per-day chart uses each seed's own boundaries.
+- ⚖️ *(Nov 16)* **Phase order:** 5c = baselines on MIND E3 → 5d = design E4 (planted shifts) + baselines
+  on it → Phase 6 = the new method (planned in a separate session). E4 is designed **before** the method's
+  results exist, so the main drift test can't be shaped (even unintentionally) to suit the method.
 - ⚖️ *(Nov 16, data review)* **E3 is worth more than expected** (user): the real week has strong,
   event-like interest drift (daily category click shares: music 5% → 25% → 8% around Nov 10, finance 22%
   on Nov 12, sports 11% → 31% on Nov 15; identical pattern in small and large). E3 is therefore a real
@@ -282,6 +353,51 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
   - **α = 0.5** is best on all 3 seeds (chosen by total reward, plan Q23). As on Forest Cover, α barely
     matters (0.432–0.437). Use α = 0.5 for LinUCB on MIND.
   - LinUCB runs at ~8k steps/s with 9 parallel jobs → a 2.04M-step MIND-large run ≈ 4–5 min.
+- 📊 *(Nov 16, Phase 5c)* **NB1 tuning on MIND-small** (`results/phase5c_tune_nb1_summary.csv`; paper grid,
+  seeds 100–102, one pass ≈ 207k steps, 45 runs in 4 min). Mean click rate: **C = 1, λ = 1: 44.6%** (best
+  on all 3 seeds) ≈ C = 5, λ = 1: 44.5% > C = 25, λ = 1: 44.0% … C = 100, λ = 1: 40.0%; λ = 0.01 is worst
+  for small nets (C = 1: 36.7%). → **NB1 on MIND = C = 1, λ = 1** (user confirmed at the checkpoint).
+  - 🔍 The **opposite** of Forest Cover (C = 100, λ = 1 best there). With one hidden unit and no biases,
+    NB1 is close to a per-arm logistic model of the category shares — the MIND category context looks
+    mostly linear. Tuned NB1 (44.6%) already edges LinUCB (43.7%) on small.
+  - ⚠️ Caveat: tuning passes are ~10× shorter than the final MIND-large runs (≈ 207k vs 2.04M steps), which
+    may favour small, fast-learning networks; Forest Cover had the same issue (500k vs 2.25M).
+  - ❓ **For Phase 6 and the paper's framing (side-agent note, Nov 16):** if MIND's category context is
+    mostly linear, NeuralUCB's edge over LinUCB on MIND may come mainly from **adapting to drift**, not
+    from being neural — frame MIND results around adaptation, and don't promise non-linear gains there.
+    **Evidence to check after the E3 runs:** NB2's EXP3 model weights on the full 2.04M-step runs
+    (saved per run) show whether large networks win once runs are long — that tests the caveat above.
+- 📊 *(Nov 16, Phase 5c)* **MIND-large E3 (real week), baselines** (`results/phase5c_mind_e3_table.csv`,
+  `_daily.csv`; figures `mind_e3_regret.png`, `mind_e3_daily.png`, `mind_daily_categories.png`). 60 runs
+  (6 × seeds 0–9), ≈ 2.04M steps each, 2 h 29 min on 8 cores (M2: 4 performance + 4 efficiency cores).
+  Done-check passed: all runs finite; Random − analytic ≤ 0.0003 on every seed.
+
+  | | click rate (mean ± std) | final regret |
+  |---|---|---|
+  | **NB1** (C = 1, λ = 1) | **46.0% ± 0.04** | **1.104M** |
+  | NB2 | 45.6% ± 0.06 | 1.111M |
+  | LinUCB (α = 0.5) | 44.7% ± 0.03 | 1.130M |
+  | NB3 | 43.6% ± 0.14 | 1.153M |
+  | Popularity (hindsight reference) | 37.2% ± 0.01 | 1.283M |
+  | Random | 20.4% ± 0.02 | 1.626M |
+
+  - 🔍 **NB1 and NB2 beat LinUCB on MIND too** (+1.3 and +0.9 points), as on Forest Cover; NB3 is below
+    LinUCB. All learners beat the fixed popularity rule by 6–9 points → personalising and adapting pay.
+    Seed spread is tiny (≤ 0.14 points), so the ranking is stable (formal tests: later statistics step).
+  - 🔍 **Per day:** LinUCB is best on the first day (learns fastest), NB1/NB2 lead from Nov 10 on. Every
+    learner peaks on **Nov 10** (the music spike). On **Nov 15** (sports spike) LinUCB stays at 41.8%
+    while NB1/2/3 jump to 45–46%; the fixed popularity rule falls steadily (41% → 31%) as interests move
+    away from its whole-week ranking — the clearest picture of natural drift hurting a non-adaptive rule.
+  - 🔍 **Answer to the "is MIND linear?" question:** on the full 2.04M-step runs, **NB2's EXP3 puts 51% of
+    its weight on C = 25** (λ = 1), 16–17% each on C = 1 and C = 5, 14% on C = 50, **2% on C = 100**
+    (argmax: C = 25 in 6/10 seeds). So with long runs a **mid-size network is preferred** over C = 1 —
+    the tuning winner (C = 1) was partly a short-run effect, and MIND is **not purely linear**. But very
+    large networks gain nothing, the margins are small (NB1 C = 1 still has the best overall click rate,
+    NB2 pays for running 15 models), and λ = 1 wins everywhere. **For Phase 6:** frame MIND gains mainly
+    around adaptation; some, but modest, non-linear structure exists.
+  - 🔍 **NB3's lock-on reappears, stronger:** 69% of its per-category EXP3s end on the weakest model
+    (C = 1, λ = 0.01) — same mechanism as Phase 4 (only the played category's EXP3 is rewarded) → NB3 is
+    the weakest learner on MIND.
 - 📝 *(Nov 16, user: keep for the paper)* **Two definitions to state in the paper:**
   1. On MIND every impression has ≥ 1 click, so **dynamic regret = steps − cumulative reward** — one
      metric shown two ways, never two separate wins (regret charts; click rates in tables/text).
@@ -293,6 +409,22 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
   the networks only process non-zero inputs). → one MIND-large run ≈ 14 min alone, ≈ 60–70 min with 8 in
   parallel (Phase 4 NB2: 46–54 min) → ≈ 2.5 h for 10 seeds of NB2. (Side-agent note predicted ×2; the
   earlier "40–50 min" estimate ignored the arm count.)
+
+- 📝 *(CLAUDE.md, "Ground truth")* **Workflow lesson:** we first assumed all of the paper's classical
+  baselines were required; the slides only say "at least one", so we build one (LinUCB). Since then every
+  decision traces to a source, in this order: course slides + instructor Slack > approved abstract >
+  base paper > primary papers of adopted methods > user decisions; anything none of them requires is out
+  of scope. (Good methodology point for the presentation.)
+- ⚖️ *(Nov 13)* "Common toolkit" integration deferred — not raised until the user does.
+- 📅 **Deadlines:** instructor checkpoint Wed Nov 18 (NB2 must beat LinUCB — passed, Phase 4); paper
+  working target Sun Nov 29 (official Dec 1); presentation + demo Mon Dec 14.
+- ⚖️ *(Nov 15, Phase 2 D7)* Forest Cover metrics so far: cumulative regret vs 0.93 + last-100k accuracy;
+  dynamic regret and a formal **adaptation-time definition are still open** — the only recovery measure
+  so far is our ad-hoc one in §6 (Phase 4). To define in Phase 5d (E4) and apply to E2 as well.
+- ⚖️ *(Nov 16, Phase 5c Q3)* If NB3's lock-on reappeared on MIND it would be reported, not fixed (the
+  baseline is NB3 as published) — it did reappear (69%).
+- ⚖️ *(Nov 16, Phase 5 Q17)* Because regret = steps − reward on MIND, the **independent** MIND evidence of
+  adaptation is adaptation time (E4) and reward around drifts (E3).
 
 ## 6. Results
 
@@ -414,6 +546,15 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
   back in that time. Both are inside the paper's 75k–350k range. By eye, Figure 1's drift panel shows
   the same: NB2's slope goes back to its pre-drift slope within a few hundred thousand steps.
   ⚠️ The paper gives no criterion; this measure is ours.
+- 📊 *(Nov 16)* **MIND results so far** — full tables and findings are in §4 under "MIND"; summary here:
+  - **Sanity / tuning on MIND-small** (Phase 5b, 5c): LinUCB best α = 0.5 (43.7% clicks); NB1 best
+    C = 1, λ = 1 (44.6%); popularity 36.0%; Random 19.9% = analytic.
+  - **E3 on MIND-large, baselines** (Phase 5c, 10 seeds): NB1 46.0% > NB2 45.6% > LinUCB 44.7% > NB3
+    43.6% > popularity 37.2% > Random 20.4%. Figures: `mind_e3_regret.png`, `mind_e3_daily.png`,
+    `mind_daily_categories.png` (day starts ≈ 151k, 316k, 679k, 1.05M, 1.41M, 1.74M steps). Key findings: NB beats LinUCB on MIND too; NB2's EXP3 prefers mid-size
+    networks (C = 25) on long runs (MIND not purely linear, modest gain); NB3 locks onto the weakest model
+    (69%); the fixed popularity rule decays 41% → 31% across the week (natural drift).
+  - **E4 (planted shifts):** Phase 5d, not yet designed. **New method:** Phase 6.
 
 ## 7. Failures, surprises & dead ends
 
@@ -508,3 +649,72 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
 - 📊 *(Nov 15)* **Phase 4 compute:** 40 runs × 2.25M steps (NB2 + NB3, 10 seeds, 2 settings), 8 parallel
   jobs. Stationary 1 h 50 min, drift 2 h 0 min. Per run inside 8 parallel jobs: NB2 ≈ 46–54 min
   (~700–950 steps/s), NB3 ≈ 21–46 min. That's faster than the 2.5 h-per-setting estimate.
+- 🔍 *(Nov 16, Phase 5b build)* **Masking without touching Forest Cover:** every `select` takes an optional
+  `avail` mask; with `avail=None` the code path and the order of random draws are exactly the old ones
+  (egreedy draws over `arange(K)`, Random's single `rng.integers`), so all saved Forest Cover runs reproduce
+  step for step (verified: all algorithms, both panels, 2 seeds × 50k steps; a 5k-step version is a
+  permanent test). NB1/2/3's Eq. 1 weight uses P(k̂) over the available arms (documented adaptation).
+- ⚖️ *(Nov 16, Phase 5b)* **Deviation from the plan's wording (accepted):** the runner keeps Forest Cover's
+  (context, correct class) items and branches on item length, instead of Forest Cover yielding one-hot
+  reward vectors like MIND — avoids rewriting the verified Forest Cover stream and its tests for a
+  cosmetic gain. Cost: 5 lines; a third environment would have to pick one of the two formats.
+- 🔍 *(Nov 16, Phase 5b review)* `/simplify` (4 reviewers): processing script shortened (plain tables
+  instead of bit masks, vectorised per-user history update) — output **byte-identical** on small and large.
+  `/code-review` (6 findings): fixed (1) the runner now **refuses a MIND config without `d: 19`** — NB would
+  otherwise run silently with the default 94 inputs; (2) preprocessing asserts every impression has ≥ 1
+  available arm (masking would crash otherwise). Skipped, with reasons: hash-only dedup (collision
+  ≈ 4e-7), loading unused arrays (≈ 38 MB/job), the runner's two formats (above).
+- ❌ *(Nov 16, Phase 5a)* **Memory lesson:** the first MIND facts script kept every impression's article
+  list in Python lists → 22 GB on a 16 GB Mac, stalled in swap; rewritten line-by-line with a few numbers
+  per impression → 90 s, 2.3 GB. Same compact design used for `preprocess_mind.py` (large: 2 min).
+- 📊 *(Nov 16)* **Measured per-step cost on MIND** (one job alone, 20k steps): LinUCB 29 µs, NB1 C = 1
+  32 µs, NB1 C = 100 67 µs, NB2 408 µs, NB3 492 µs (NB2 on Forest Cover: 325 µs). Machine: Apple M2,
+  4 performance + 4 efficiency cores, 16 GB; with 8 parallel jobs each runs ≈ 4× slower than alone.
+  **Phase 5c compute:** NB1 tuning 45 runs in 4 min; E3 60 runs on MIND-large in **2 h 29 min**.
+  (Two earlier estimates were wrong and corrected by measuring: "40–50 min per NB2 run" ignored the arm
+  count; "7–8 h for 5c" wrongly assumed NB1 costs as much as NB2.)
+- 🔍 *(Nov 16)* Practicalities: closing the laptop lid pauses runs (sleep), it doesn't kill them;
+  `run_experiment.py` saves each run as it finishes and reuses it if the settings match, so an interrupted
+  batch only redoes unfinished runs.
+- 📊 **Test counts:** Phase 1: 18; Phase 4: 57; Phase 5b: 73 (incl. the permanent 5k-step Forest Cover
+  exact-match test).
+- 🔍 *(Phase 3–4)* Overflow-safe sigmoid (`scipy.special.expit`), so even ×1,400 updates can't overflow;
+  `check_finite` extended in Phase 4 to look inside the committee's stacks and EXP3s (fixes the Phase 3
+  review warning above). Committee layout: NB2/NB3's 15 models live in 5 `MLPStack`s (one per C, 3 λ each);
+  one gate applies to all models, so `MLPStack.update` is unchanged.
+- ⚖️ *(Nov 15, Phase 2 D8; Phase 5 Q1–Q2)* **Git policy:** commit summary CSVs and figures; per-step rewards
+  go to gitignored `results/raw/`; no MIND data (raw or processed) in git (MSR license).
+- ⚖️ *(Nov 15, Phase 3 D9)* PyTorch stays out of requirements.txt: the one-time gradient cross-check ran in a
+  temporary `uv run --with torch` environment.
+- 🔍 **Environment:** Python 3.11.4 in `.venv` (uv), pinned requirements (scikit-learn 1.9.1, numpy 2.4.6,
+  pandas 3.0.5 …), pytest with pythonpath=.; folder layout follows course slide 71.
+- 📝 **Workflow (methodology slide):** each phase = plan to zero open questions (asked one by one, every
+  setting sourced) → build (Sonnet for routine code; Opus for NB1/2/3, EXP3, gating) → verify → `/simplify`
+  → `/code-review` → report → user commits. Phase 4 added a stop after the build for the user to read the
+  code, then a 200k-step short check before the full runs. Data-dependent plans get a data-review stop
+  (Phase 5).
+
+## 9. References & verification (paper references section)
+
+- 📄 *(Nov 12, user decision)* **Base paper authors:** the provided PDF (arXiv:1409.8191v1) prints "Robin
+  Allesiardo, Raphaël Féraud, Djallel Bouneffouf"; current arXiv/Springer/Crossref metadata say "Elys
+  Allesiardo" (and drop the accent in Féraud). We cite as printed in the PDF; discrepancy recorded.
+- 📄 **Published version:** *Neural Information Processing* (ICONIP 2014), LNCS, Springer, pp. 374–381,
+  DOI 10.1007/978-3-319-12637-1_47 — LNCS volume and editors `[UNVERIFIED]` (Springer page needs login).
+- 📄 **CTS:** the base paper cites the 2012 CoRR version (its ref. [19]); we cite ICML 2013 (PMLR 28(3),
+  pp. 127–135).
+- ⏳ **ADWIN (R8)** has only one independent source (Crossref; SIAM and DBLP blocked automated access on
+  Nov 12) → not in references.bib yet. Page–Hinkley (R9) verified.
+- 📝 **Corrections the audit triggered (Part 3):** README had NeuralUCB's bound as Õ(√T) (→ Õ(d̃√T)); "MIND-
+  small ~230k impressions" unverified (now counted: 230,117); base paper cited as ICONIP without the arXiv
+  v1 we used; README reference list was written from memory.
+- 📝 **Citation rule:** never cite from memory; bibliographic fields need ≥ 2 primary sources; references.bib
+  holds only ✅ entries; anything unverified is marked `[UNVERIFIED]`; discrepancies go to the user.
+- 📄 *(Nov 15)* **MIND license** (MSR License Terms): allowed — teaching, academic research, public
+  demonstrations, personal experimentation, publishing results without "material portion of the
+  Dataset"; forbidden — distributing it, altering copyright notices, implying Microsoft endorsement,
+  malicious use; accepted by use; §7 US binding arbitration; §11–12 "as is", liability capped at $5; no
+  citation requirement (the site asks for one; we cite R7). **User agreed Nov 15.**
+- 📄 **LinUCB versions:** the §3 LinUCB notes come from the arXiv **v2** PDF (user copy, read Nov 15); C23/C24
+  (arm set A_t, constant feature) were read in **v1** (Nov 16). Same content for these passages; cite one
+  version in the paper (decide when writing references).
