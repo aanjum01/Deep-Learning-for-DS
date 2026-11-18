@@ -26,6 +26,7 @@ p = argparse.ArgumentParser()
 p.add_argument("--config", required=True)
 cfg = yaml.safe_load(open(p.parse_args().config))
 name, steps, env = cfg["name"], cfg.get("steps"), cfg.get("env", "forest_cover")  # MIND: one pass, no steps
+shifts, drift_every = cfg.get("shifts"), cfg.get("drift_every")  # shifts: E4 planted relabelling steps (phase-5d)
 
 raw = ROOT / "results/raw" / name
 raw.mkdir(parents=True, exist_ok=True)
@@ -35,12 +36,14 @@ def job(a, seed):
     """Run one (algorithm, seed), saving as soon as it finishes; reuse a saved run if present."""
     path = raw / f"{a['label']}_seed{seed}.npz"
     # reuse only if settings match; Forest Cover keeps its old key so saved runs stay valid
-    key = repr((a["class"], a["params"], steps, cfg.get("drift_every")) + (() if env == "forest_cover" else (env,)))
+    # append only non-default settings, so Forest Cover's and E3's saved runs keep their keys (phase-5d R10)
+    extra = ((env,) if env != "forest_cover" else ()) + ((tuple(shifts),) if shifts else ())
+    key = repr((a["class"], a["params"], steps, drift_every) + extra)
     if path.exists():
         with np.load(path) as d:
             if str(d["key"]) == key:
                 return d["rewards"], d["best"] if "best" in d else None, float(d["seconds"])
-    rewards, best, secs, diag = run_one(CLASSES[a["class"]], a["params"], seed, steps, cfg.get("drift_every"), env)
+    rewards, best, secs, diag = run_one(CLASSES[a["class"]], a["params"], seed, steps, drift_every, env, shifts)
     extra = {} if best is None else {"best": best}
     np.savez(path, rewards=rewards, seconds=secs, key=key, **extra, **diag)  # diag: NB2/NB3 model_probs
     return rewards, best, secs

@@ -421,6 +421,84 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
 - ⚖️ *(Nov 15, Phase 2 D7)* Forest Cover metrics so far: cumulative regret vs 0.93 + last-100k accuracy;
   dynamic regret and a formal **adaptation-time definition are still open** — the only recovery measure
   so far is our ad-hoc one in §6 (Phase 4). To define in Phase 5d (E4) and apply to E2 as well.
+- ⚖️ *(Nov 17, Phase 5d R2)* **What decides "adapts better" (fixed before Phase 6):** per shift, **clicks
+  lost** (extra regret vs the no-shift run over the 500k steps after the shift) decides; adaptation time
+  (R10 stopwatch, 95%, on 10-seed-averaged curves, "> X" if not recovered) and the click rate are reported
+  alongside. Reason: on Forest Cover the 95% bar is often never reached (LinUCB, NB1 "> 500k" after every
+  drift), so the stopwatch can't rank methods.
+  **Refined (S2, Nov 17):** "adapts better" needs fewer clicks lost **and** at least as many total E4 clicks in
+  the same window — otherwise "trades normal performance for robustness" (Random loses ~0 clicks by never learning).
+  **Margin (S3, Nov 17):** a difference counts only if the 10-seed means differ by > 2 × combined standard
+  error; otherwise "no clear difference"; Random shown as the noise floor.
+- 🔍 *(Nov 17, Phase 5d planning, verified on saved runs)* **Forest Cover recovery under the new, sourced
+  measure** (R10 stopwatch on 10-seed-averaged curves vs the stationary run): LinUCB and NB1 never get back to
+  95% before the next drift; NB2 recovers after drift 1 only (220k steps); NB3 after drifts 1–3 (339k, 368k,
+  442k). This is **stricter** than Phase 4's ad-hoc "within 2 points of the pre-drift level" (§6), because the
+  stationary reference keeps improving — the paper must explain both and use the new one. Per-seed stopwatches
+  were rejected: they make Random "dip" after every drift on every seed (noise); averaging over seeds removes it.
+- ⚖️ *(Nov 17, Phase 5d S1)* **E4 shift times = 300k, 1M, 1.5M**, from a data-only rule fixed before any E4
+  run: no shift within ±50k steps of a natural jump (a category's click rate when shown changes by ≥ 0.15
+  between the 50k steps before and after). The originally planned 500k sat on the week's biggest natural
+  event — **tv click rate 0.08 → 0.52 → 0.14 over ≈ 460k–540k**, in every seed — where stale LinUCB (E3 drops
+  to 0.335) got a relabelling windfall while NB1/2/3 (rising to ~0.52 in E3) didn't; that biases clicks lost
+  against methods that track real drift. Other natural jumps ≥ 0.15: ≈ 160–200k (music), 360–380k, 640k,
+  780–820k, 1.24–1.26M, 1.94–1.96M. Uneven spacing (paper: every 500k), stated with this reason.
+- 🔍 *(Nov 17, Phase 5d S8)* On MIND a planted shift can make an arm almost unplayable (it inherits the
+  availability of kids / northamerica, ≈ 0% shown), forcing exploration — Forest Cover has no such effect (all
+  arms always available). E4 and Forest Cover adaptation times are therefore **not compared like-for-like**.
+- ⚖️ *(Nov 17, Phase 5d R6)* **Rules for Phase 6 from the E4 design:** (1) every method/ablation needs a
+  paired E3 + E4 run per seed (adaptation is measured against the same seed's no-shift run) — budget runs and
+  LLM API cost; (2) cache/replay LLM answers so runs are repeatable; (3) shift times are never visible to any
+  method (settings, prompts, code) — it must detect the change; (4) the LLM sees arm numbers / neutral labels,
+  not category names (relabelling is only a pure renaming for arm-agnostic learners), or this is a stated
+  limitation.
+- ⚖️ *(Nov 17, after Phase 5d results, user agreed)* **What Phase 6 must keep in mind:** (1) the bar is NB1/NB2,
+  not LinUCB — "adapts better" needs fewer than ≈ 5.5–6.5k clicks lost at shifts 2–3 **and** at least as many
+  total clicks; (2) little room at shift 1 (NB1/NB2 already recover in 14–18k steps) — the chance to show a
+  gain is at the later shifts (47k–116k); (3) gains may be small in absolute terms (6k ≈ under 3% of the
+  ≈ 220k clicks in a window), so a marginal gain may not clear the 2 × SE margin with 10 seeds; (4) the
+  "slower each shift" trend mixes lost plasticity with later, weaker days — if the sliding window flattens
+  it, that is evidence for plasticity; (5) only 3 shifts — a stated limitation.
+- ⚖️ *(Nov 17, user)* **What the ablations answer:** which component made a meaningful difference. The core 4
+  (Nov 13) are leave-one-out from the full model: −LLM controller (= NeuralUCB + window), LLM → rule-based
+  controller, −UCB (ε-greedy network + window + LLM), −sliding window (= NeuralUCB + LLM). "NeuralUCB alone"
+  (no window, no controller) is **not** among the core 4; whether to add it is a Phase 6 planning question
+  (it would separate "NeuralUCB vs NB" from "drift handling"). Each needs paired E3 + E4 runs (rule above).
+- ❓ *(Nov 17, user ideas for Phase 6 planning — not decided)* (1) NeuralUCB's guarantees appear to be for
+  stationary data [UNVERIFIED — check the NeuralUCB paper, log in REFERENCES_VERIFICATION before any claim];
+  the window/LLM may be what makes it work under drift. (2) Since NB1 is the best baseline, also try the
+  sliding window and/or LLM controller **on NB1** — this would show whether drift handling helps any learner
+  or only NeuralUCB. Out of the Nov 13 scope until the user decides; it adds paired runs. (3) **Make Phase 6
+  modular:** Phase 5 grew into 5, 5b, 5c, 5d, each needing a full plan; plan Phase 6 as small sub-phases
+  (e.g. NeuralUCB alone → + sliding window → rule-based controller → LLM controller → ablation runs), each
+  with its own plan, checks and commit, so a deadline slip cuts the last pieces rather than everything.
+- ⚖️ *(Nov 17, user)* **Phase 6 decisions and roadmap** (resolves the open items above and the Nov 13 "ablations
+  on E2?" question):
+  - **Ablations run on MIND E3 + E4 only**; E2 only at the end if time allows. Why: an ablation asks "which
+    component matters" — E4 (precise clock) + E3 (real drift) answer it; 4 ablations × E1/E2 × 10 seeds = 80
+    more 2.25M-step runs + LLM calls for little new information. The **full model** still runs on E1–E4
+    (every baseline did; the proposal compares with the paper's 75k–350k on Forest Cover).
+  - **NeuralUCB alone becomes a reported method** (E1–E4): it is built anyway (6a) and separates "NeuralUCB is
+    a better learner than NB" from "drift handling helps".
+  - **Window / LLM on NB1: deferred**, last optional sub-phase, dropped if short on time (outside the Nov 13
+    scope; NB1 learns online with no stored data, so a window changes its algorithm — new design work).
+  - **Sub-phases** (each: plan → build → verify → review → report → commit). Build order adds pieces; the
+    reported ablations remove one piece from the full model.
+    - 6a NeuralUCB alone: build, tune on MIND-small without shifts, full runs E1–E4.
+    - 6b + sliding window: build + short checks + tune the window (full E3/E4 runs of this version happen
+      in 6e as the "−LLM controller" ablation).
+    - 6c rule-based controller: build + short checks + tune (full runs in 6e as "LLM → rule-based").
+    - 6d LLM controller → full model: build, then full runs E1–E4.
+    - 6e the 4 ablations on MIND E3 + E4.
+    - 6f statistics, figures, paper tables.
+    - Optional if time: ablations on E2; window/LLM on NB1.
+  - ❓ For 6b planning: the window size must be tuned without planted shifts (Q10 fairness rule), but on
+    shift-free data the best window may simply be "as large as possible" — decide how to tune it then.
+    User idea (Nov 18): test several window sizes. Fair if the size used for the headline comparison is
+    chosen without shifted data and the other sizes are shown as a sensitivity sweep (all reported, none
+    picked by its E4 result). Also: the user has ideas for the LLM controller — raise them in 6d planning. baselines on E4 keep their 5c
+  settings, tuned on MIND-small **without** planted shifts; the new method must be tuned the same way —
+  never on shifted data — otherwise it would get a drift-specific advantage the baselines didn't.
 - ⚖️ *(Nov 16, Phase 5c Q3)* If NB3's lock-on reappeared on MIND it would be reported, not fixed (the
   baseline is NB3 as published) — it did reappear (69%).
 - ⚖️ *(Nov 16, Phase 5 Q17)* Because regret = steps − reward on MIND, the **independent** MIND evidence of
@@ -554,9 +632,84 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
     `mind_daily_categories.png` (day starts ≈ 151k, 316k, 679k, 1.05M, 1.41M, 1.74M steps). Key findings: NB beats LinUCB on MIND too; NB2's EXP3 prefers mid-size
     networks (C = 25) on long runs (MIND not purely linear, modest gain); NB3 locks onto the weakest model
     (69%); the fixed popularity rule decays 41% → 31% across the week (natural drift).
-  - **E4 (planted shifts):** Phase 5d, not yet designed. **New method:** Phase 6.
+  - **E4 (planted shifts):** Phase 5d, results below. **New method:** Phase 6.
+- 📊 *(Nov 17, Phase 5d)* **E4 on MIND-large, baselines** (10 seeds, shifts at 300k / 1M / 1.5M, each a cyclic
+  relabelling of the 16 category arms; measured against the same seed's E3 run; plan `phase-5d.md`).
+  Outputs: `results/phase5d_mind_e4_{recovery,verdicts,table}.csv`, `figures/mind_e4_{recovery,regret}.png`.
+  - **Done-checks all pass:** E4 = E3 bit-for-bit for the first 300,000 steps in all 60 (algorithm × seed)
+    pairs; all 60 runs complete and finite; Random never dips (worst 2%, adaptation time 0 at every shift);
+    every learner dips below 95% after shift 1 (worst loss LinUCB 27%, NB3 22%, NB2 12%, NB1 10%).
+  - **Overall E4 click rate:** NB1 45.2% > NB2 44.8% > LinUCB 42.1% ≈ NB3 42.0% > Popularity 23.9% > Random
+    20.4% (E3: 46.0 / 45.6 / 44.7 / 43.6 / 37.2 / 20.4). The shifts cost NB1/NB2 under 1 point, LinUCB 2.6,
+    NB3 1.6; same ranking as E3 except LinUCB falls to NB3's level.
+  - **Clicks lost per shift** (500k-step window, mean ± std over seeds — the pre-registered deciding number):
+
+    | | Shift 1 (300k) | Shift 2 (1M) | Shift 3 (1.5M) |
+    |---|---|---|---|
+    | NB1 | 3,443 ± 659 | **5,544 ± 221** | **6,180 ± 253** |
+    | NB2 | 3,129 ± 655 | 6,017 ± 770 | 6,515 ± 686 |
+    | NB3 | 3,186 ± 2,051 | 14,238 ± 2,468 | 13,894 ± 2,521 |
+    | LinUCB | −2,546 ± 1,011 ⚠️ | 24,288 ± 795 | 29,487 ± 713 |
+    | Popularity | 79,987 | 86,950 | 67,499 |
+    | Random | −109 | −99 | −53 |
+
+    ⚠️ LinUCB's negative number at shift 1 is the 500k "tv" spike (see §7), not robustness.
+  - **Adaptation time** (R10 stopwatch on the 10-seed mean curves; steps from the shift until back ≥ 95% of
+    E3 for 10k straight steps): NB1 14k → 47k → 114k; NB2 18k → 51k → 116k; NB3 23k → 178k → 127k;
+    LinUCB 20k → 219k → 236k. **Every learner recovers from every shift** (unlike Forest Cover E2).
+  - **Verdicts (pre-registered rule):** shifts 2 and 3 — NB1 and NB2 adapt better than LinUCB and NB3, NB3
+    better than LinUCB, NB1 vs NB2 no clear difference. Shift 1 — NB1/NB2/NB3 mutually no clear difference;
+    vs LinUCB the rule says "LinUCB trades performance for robustness" (vs NB1, NB2) and "LinUCB better" (vs
+    NB3), but this is driven by the 500k spike (§7) — report with that caveat.
+  - **Main findings for the paper:** (1) the NB committee/MLPs lose 4–5× fewer clicks than LinUCB after a
+    shift once the run is long (shifts 2–3); (2) **adaptation gets slower with every shift for every
+    learner** (NB1 14k → 114k) — consistent with learners that lose plasticity as they accumulate data
+    (LinUCB's A matrix only grows; the MLPs never forget). ⚠️ Inference: later shifts also fall on
+    different days with lower click rates, so this design can't separate plasticity from timing. This is the
+    gap the proposal's sliding window targets — Phase 6 should test whether it flattens this trend;
+    (3) NB3 is the least stable NB variant (seed std 3–4× the others), matching its lock-on (§6, Phase 4).
+  - **vs the paper's "between 75.000 and 350.000 in the worst case" (p. 7, Forest Cover):** on MIND the NB
+    methods recover in 14k–178k steps — faster, but not like-for-like (S8: a shift on MIND can make an arm
+    nearly unplayable; Forest Cover's arms are always available).
+- 📊 *(Nov 17, Phase 5d R9)* **Forest Cover E2 under the new measure** (`results/forest_e2_{recovery,
+  verdicts}.csv`, `figures/forest_e2_recovery.png`; same stopwatch, vs the stationary run): only NB2 (drift 1,
+  221k steps) and NB3 (drifts 1–3: 340k, 369k, 443k) ever get back to 95%; LinUCB and NB1 never do before
+  the next drift. Clicks lost per 500k window: LinUCB 129k–201k, NB1 38k–153k (grows each drift), NB2 31k–47k,
+  NB3 34k–49k. Verdicts: NB2 and NB3 adapt better than NB1 and LinUCB from drift 2 on; at drift 1 every NB
+  beats LinUCB. **Compared with Phase 4's ad-hoc measure** (NB2 ~249k/294k/166k, NB3 ~348k/239k/169k, all
+  "inside 75k–350k"): the new measure is stricter because the stationary reference keeps improving, so most
+  drifts count as "never recovered", and NB3's 443k after drift 3 falls **outside** the paper's range. The
+  paper should report the new measure and say why the numbers differ.
+- 📊 *(Nov 17, Phase 5d S5)* **MIND-small rehearsal** (seed 100, shifts 50k/100k/150k, 3.5 min): every check
+  passed (pairs identical before shift 1, every output produced). Shift 1 bit weakly on small (NB1 stayed
+  above 95%) and Random showed one single-seed noise blip at shift 3 — both expected with one seed; the
+  10-seed large run shows neither.
 
 ## 7. Failures, surprises & dead ends
+
+- 🔍 *(Nov 17, Phase 5d)* **The 500k "tv" spike leaks into shift 1's window.** S1 moved shift 1 to 300k so the
+  shift itself avoids the spike, but the 500k-step measurement window [300k, 800k) still contains it. Around
+  500k the shifted run's click rate jumps to ~1.5× the no-shift run for LinUCB and Popularity (figure
+  `mind_e4_recovery.png`). Split of LinUCB's clicks lost: [300k, 480k) +1,014; [480k, 560k) **−3,537**;
+  [560k, 800k) −24. The NB methods lose clicks in all three parts (NB1 +1,352 / +910 / +1,181). So LinUCB's
+  −2,546 at shift 1 comes from its no-shift twin doing badly during the spike, not from robustness. The
+  pre-registered rule is kept as is (not changed after seeing results); the paper reports shift 1 with this
+  caveat and leans on shifts 2–3. ⚖️ *(user, Nov 17)* The paper shows the split as **one sentence with the
+  numbers** (not a figure/table), e.g. "LinUCB's negative value at shift 1 comes entirely from steps
+  480k–560k (−3,537 clicks), where its no-shift run drops during a news-event spike; outside it, it loses
+  ≈ 1,000 clicks." Why: without the numbers our own rule appears to call LinUCB more robust; with them the
+  claim is checkable, and keeping the pre-registered rule while explaining it reads as honest.
+- 🔍 *(Nov 17, Phase 5d)* LinUCB recovers from shift 3 (236k) and then falls below 95% again at ~1.97M; the
+  stopwatch counts only the first recovery (R10 definition), so this second dip shows only in the figure.
+  It lines up with the natural jump at ≈ 1.94–1.96M listed under S1 (§5) — inference: a real news event
+  hits the relabelled LinUCB harder than its no-shift twin.
+- 📝 *(Nov 17, user)* **Paper framing — natural vs planted drift (E3 vs E4):** E3 has real, short news-event
+  spikes (music Nov 10, finance Nov 12, sports Nov 15, the tv spike at ≈ 460k–540k steps; §4 and S1 in §5)
+  with no clean start moment; E4 adds planted shifts with exact start times on top of them. The two
+  interact: the tv spike distorts shift 1's measurement (above) and the 1.94M jump gives LinUCB a second dip.
+  Talking points: (1) on natural spikes NB1/2 rise and LinUCB stays flat (Nov 15: LinUCB 41.8% vs NB 45–46%);
+  (2) planted shifts confirm the same order with a precise clock; (3) real drift can't be fully separated
+  from planted drift on real data — a limitation and the reason E4 shift times avoid natural jumps.
 
 - ❌ *(Nov 15)* **NB1 with the ×1/P update on the played action collapses to the majority class.**
   Last-100k accuracy after 300k steps (C = 25, tuning seeds 100/101): **48.4–48.6% for every λ in
@@ -676,7 +829,11 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
 - 🔍 *(Nov 16)* Practicalities: closing the laptop lid pauses runs (sleep), it doesn't kill them;
   `run_experiment.py` saves each run as it finishes and reuses it if the settings match, so an interrupted
   batch only redoes unfinished runs.
-- 📊 **Test counts:** Phase 1: 18; Phase 4: 57; Phase 5b: 73 (incl. the permanent 5k-step Forest Cover
+- 📊 *(Nov 17, Phase 5d)* **E4 compute:** 60 runs on MIND-large in **2 h 32 min** (Random/Popularity/LinUCB/NB1
+  done in 12 min; NB2/NB3 ≈ 50 min per wave of 8). `make_recovery.py e4` takes 47 s. Lesson: other apps
+  (Docker's VM, Chrome) had filled RAM and swap, and the workers ran at ~30% CPU until they were closed —
+  check free memory before a long batch.
+- 📊 **Test counts:** Phase 5d: 82. Phase 1: 18; Phase 4: 57; Phase 5b: 73 (incl. the permanent 5k-step Forest Cover
   exact-match test).
 - 🔍 *(Phase 3–4)* Overflow-safe sigmoid (`scipy.special.expit`), so even ×1,400 updates can't overflow;
   `check_finite` extended in Phase 4 to look inside the committee's stacks and EXP3s (fixes the Phase 3
@@ -695,6 +852,25 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
   (Phase 5).
 
 ## 9. References & verification (paper references section)
+
+**Reference map — what each source is used for in this project** (full bibliographic records and
+checks: `paper/REFERENCES_VERIFICATION.md`; ✅ = verified in ≥ 2 independent sources):
+
+| # | Reference | ✓ | What we use it for / what it inspired |
+|---|---|---|---|
+| R1 | Allesiardo, Féraud & Bouneffouf 2014, *A Neural Networks Committee for the Contextual Bandit Problem* (arXiv:1409.8191v1; ICONIP 2014) | ✅ | The base paper we reproduce: NB1/2/3, Forest Cover setup, 0.93 reference, drift = class rotation every 500k, "75k–350k to stabilize" — the gap our method targets |
+| R2 | Zhou, Li & Gu 2020, *Neural Contextual Bandits with UCB-based Exploration* (NeuralUCB), ICML 2020 | ✅ | Core of NeuralBandit++ (Phase 6): uncertainty-aware exploration replacing NB's fixed γ; regret Õ(d̃√T) the 2014 paper lacks |
+| R3 | Li, Chu, Langford & Schapire 2010, *A Contextual-Bandit Approach to Personalized News Article Recommendation* (LinUCB), WWW 2010 | ✅ | The classical baseline (instructor's "beat LinUCB"); also justifies MIND **masking** (per-trial arm set A_t, C23) and the **constant-1** context feature (C24) |
+| R4 | Agrawal & Goyal 2013, *Thompson Sampling for Contextual Bandits with Linear Payoffs* (CTS), ICML 2013 | ✅ | Appears in the base paper's Figure 1; **not reproduced** (scope: one classical baseline) |
+| R5 | Kakade, Shalev-Shwartz & Tewari 2008, *Efficient Bandit Algorithms for Online Multiclass Prediction* (Banditron), ICML 2008 | ✅ | Appears in the base paper's Figure 1 (57%); **not reproduced** |
+| R6 | Auer, Cesa-Bianchi, Freund & Schapire 2002, *The Nonstochastic Multiarmed Bandit Problem* (EXP3), SIAM J. Comput. | ✅ | EXP3 inside NB2/NB3 (model selection over the committee) |
+| R7 | Wu et al. 2020, *MIND: A Large-scale Dataset for News Recommendation*, ACL 2020 | ✅ | The real-world dataset (E3/E4); facts, splits, license |
+| R8 | Bifet & Gavaldà 2007, *Learning from Time-Changing Data with Adaptive Windowing* (ADWIN), SIAM SDM 2007 | ⏳ | Planned drift detector for the rule-based controller / drift monitor (Phase 6); one source so far → not citable yet |
+| R9 | Page 1954, *Continuous Inspection Schemes* (Page-Hinkley test origin), Biometrika | ✅ | Planned drift detector for the rule-based controller (Phase 6) |
+| R10 | Shaker & Hüllermeier 2015, *Recovery analysis for adaptive learning from non-stationary data streams: Experimental design and case study*, Neurocomputing 150:250–264 | ✅ | **Defines how we measure adaptation** (Phase 5d): reference-curve comparison, "duration" with 95% thresholds, maximum performance loss (C30); supports the **cyclic label shift** used for E4 (C31) and semi-synthetic drift on real data (C29). Read Nov 17 (authors' draft) |
+| R11 | Garivier & Moulines 2011, *On Upper-Confidence Bound Policies for Switching Bandit Problems*, ALT 2011 (LNCS) | ✅ meta | Classic **sliding-window / discounted UCB** for abruptly changing bandits — background for our sliding-window component (Phase 6). Metadata verified; **paper not read yet** — read before citing any claim from it |
+| — | Course slides (Intro-Deep Learning for Data Science.pptx) | — | Requirements: baselines (slide 69), ablations (68), evaluation metrics incl. "adaptation time after drift" (67), concept drift (60), report questions (73), repo layout (71) |
+| — | Approved abstract (Oct 5) | — | Our promised method, datasets and metrics |
 
 - 📄 *(Nov 12, user decision)* **Base paper authors:** the provided PDF (arXiv:1409.8191v1) prints "Robin
   Allesiardo, Raphaël Féraud, Djallel Bouneffouf"; current arXiv/Springer/Crossref metadata say "Elys

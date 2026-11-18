@@ -21,6 +21,10 @@ Full plan, experiments (E1–E4) and metrics: see README.md.
 - Every baseline runs in every environment the method runs in (slide: "identical environments and
   evaluation protocols") — Forest Cover AND MIND, not just Figure 1.
 - Ablations = core 4 only: −LLM controller; LLM → rule-based controller; −UCB; −sliding window.
+  Run on MIND E3 + E4 only (user, Nov 17); E2 only if time allows. Full model + NeuralUCB alone run E1–E4.
+- Phase 6 = modular sub-phases 6a–6f (user, Nov 17; RESEARCH_LOG §5): 6a NeuralUCB alone, 6b + window,
+  6c rule-based controller, 6d LLM controller → full model, 6e ablations, 6f stats/figures. Optional last:
+  window/LLM on NB1.
 - "Common toolkit" integration: deferred — do not raise it until the user does.
 
 ## How we work (MANDATORY) — the phase loop
@@ -139,6 +143,10 @@ algorithms/ models/ exploration/ nonstationary/ llm/ evaluation/
   small's users). Dynamic regret = steps − reward on MIND (every impression has a click). MIND configs
   must set `d: 19` (runner checks). LinUCB α = 0.5 on MIND (tuned Nov 16). NB1 on MIND: C = 1, λ = 1
   (tuned Nov 16, Phase 5c); NB2/NB3: paper grid, γ = 0.005, γ_model = 0.1. E3 results: phase5c_mind_e3.
+- E4 (Phase 5d, `paper/plans/phase-5d.md`): shifts at 300k/1M/1.5M = cyclic arm relabelling (arm a → category
+  (a+j) mod 16); every method needs a paired E3 + E4 run per seed. Deciding number = clicks lost per shift
+  (500k window, vs same-seed E3) with the pre-registered `adapts_better` rule; adaptation time = R10 stopwatch
+  on 10-seed mean curves. `scripts/make_recovery.py {e4|forest|trial}`. E4 results: phase5d_mind_e4.
 - Reference repo TheAmazingElys/NeuralBandit: no license, unfinished (no NB2/NB3), never copy code,
   and **never a source for any decision** — the 2014 paper is the source of truth; where the repo
   differs (biases, no importance weighting, momentum, γ = 0.05), follow the paper (user, Nov 15).

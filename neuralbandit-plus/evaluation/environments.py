@@ -1,5 +1,6 @@
 """Streaming environments: Forest Cover [allesiardo2014, §5] and MIND category arms [wu2020mind] (plan phase 5)."""
 
+from bisect import bisect_right
 from pathlib import Path
 
 import numpy as np
@@ -41,8 +42,24 @@ def mind_rows(data, seed, user_frac=0.9):
     return np.flatnonzero(np.isin(data["user"], keep))  # rows are already sorted by time
 
 
-def mind_stream(data, rows):
-    """Yield (context, reward per arm, available arms) for each row, once, in time order (plan Q5-Q11)."""
+def mind_stream(data, rows, shifts=None):
+    """Yield (context, reward per arm, available arms) for each row, once, in time order (plan Q5-Q11).
+
+    shifts (E4, plan phase-5d): 0-based stream steps where a sudden cyclic relabelling starts. From step t on,
+    with j = number of shifts <= t, arm a receives the rewards and availability of category (a + j) mod K;
+    the context is unchanged [allesiardo2014, §5, p. 6; shaker2015recovery, §5.2]. None = E3, unchanged.
+    """
     X, R, avail = data["X"], data["R"], data["avail"]
-    for i in rows:
-        yield X[i].astype(np.float32), R[i], avail[i]
+    shifts = sorted(shifts or [])
+    K = R.shape[1]
+    perm = [(np.arange(K) + j) % K for j in range(len(shifts) + 1)]  # perm[j][a] = category served by arm a
+    for t, i in enumerate(rows):
+        j = bisect_right(shifts, t)
+        r, a = (R[i], avail[i]) if j == 0 else (R[i][perm[j]], avail[i][perm[j]])
+        yield X[i].astype(np.float32), r, a
+
+
+def day_starts(data, seeds):
+    """Mean step (over seeds) at which each new day starts in a MIND run (plan 5c Q8)."""
+    day = data["time"].astype("datetime64[D]").astype(np.int64)
+    return np.mean([np.flatnonzero(np.diff(day[mind_rows(data, s)])) + 1 for s in seeds], axis=0)

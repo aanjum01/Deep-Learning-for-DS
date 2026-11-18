@@ -121,7 +121,7 @@ python scripts/mind_facts.py --size small        # optional: data facts (aggrega
 | **E1** | Forest Cover, stationary | Random, LinUCB, NB1, NB2, NB3 | Reproduce the paper (reported: NB2 76%, NB3 73%, LinUCB 72%, measured as classification rate over the last 100k predictions) |
 | **E2** | Forest Cover, class rotation (1→2→…→7→1) every 500k steps | E1 + NeuralUCB variants + rule / LLM controller | Compare recovery time with the paper's 75k–350k steps |
 | **E3** | MIND, the real week in time order | LinUCB, NB1–3, NeuralUCB variants + controllers | Natural interest drift (strong, event-like daily swings in category clicks) |
-| **E4** | MIND with category-preference shifts planted at known times | Same as E3 | Precise adaptation-time measurement (main MIND drift test) |
+| **E4** | E3 plus 3 planted shifts (cyclic relabelling of the 16 category arms at steps 300k, 1M, 1.5M, fixed by a data-only rule before any run) | Same as E3 | Precise adaptation measurement vs the same seed's E3 run: clicks lost per shift + adaptation time (Shaker & Hüllermeier 2015) |
 
 **Baselines.** Following the course requirements, the baselines are NeuralBandit1, NeuralBandit2, NeuralBandit3 and one classical contextual bandit, **LinUCB** (chosen because the instructor's success criterion is defined against it). Random is included only as a sanity reference. All baselines run in every environment (E1–E4) under the same evaluation protocol as the proposed method. Banditron and CTS, which appear in the original paper's Figure 1, are out of scope.
 
@@ -143,6 +143,8 @@ Each ablation removes one component from the full model, to measure what actuall
 ```bash
 python scripts/run_experiment.py --config configs/e1_forest_stationary.yaml
 python scripts/make_figures.py
+python scripts/run_experiment.py --config configs/phase5d_mind_e4.yaml   # E4 (needs phase5c_mind_e3 too)
+python scripts/make_recovery.py e4       # also: forest (E2 re-measure), trial (MIND-small rehearsal)
 ```
 
 ---
@@ -184,12 +186,13 @@ A partial, unlicensed implementation by the original first author ([TheAmazingEl
 - [x] Baselines (Random, LinUCB) + runner + metrics — LinUCB 71.9% vs. paper's 72%
 - [x] NeuralBandit1 — 82.0% stationary; beats LinUCB on regret in both panels
 - [x] NeuralBandit 2/3 + EXP3 → **E1/E2 reproduction**: NB2 80.8% (paper 76%), NB3 72.5% (paper 73%); NB2 beats LinUCB on regret in both panels
-- [ ] NeuralUCB + sliding window + rule-based controller
+- [ ] 6a NeuralUCB alone (reported method, E1–E4)
+- [ ] 6b + sliding window · 6c rule-based controller (build + tune; full runs in 6e)
 - [x] MIND environment (category arms, masking) — LinUCB 43.7% clicks vs. popularity 36.0%, Random 19.9% (MIND-small, α = 0.5)
-- [ ] LLM controller and agents
+- [ ] 6d LLM controller and agents → full model, E1–E4
 - [x] Baselines on MIND E3 (real week, MIND-large, 10 seeds): NB1 46.0%, NB2 45.6%, LinUCB 44.7%, NB3 43.6% clicks (popularity 37.2%, Random 20.4%)
-- [ ] E4 (planted shifts) design + baselines
-- [ ] E3/E4 for the new method, ablations, statistics, figures
+- [x] E4 (planted shifts) design + baselines: every learner recovers; after shifts 2–3 NB1/NB2 lose ~6k clicks vs LinUCB ~24–29k; adaptation slows with each shift (NB1 14k → 47k → 114k steps)
+- [ ] 6e ablations (MIND E3 + E4) · 6f statistics, figures (optional if time: ablations on E2; window/LLM on NB1)
 - [ ] Paper (ACM WWW format, due Dec 1, 2026)
 - [ ] Presentation and demo (Dec 14, 2026)
 

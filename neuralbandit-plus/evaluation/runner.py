@@ -47,14 +47,15 @@ def check_finite(policy):
             todo += [(f"{path}.{k}", v) for k, v in vars(obj).items()]
 
 
-def run_one(cls, params, seed, steps, drift_every, env="forest_cover"):
+def run_one(cls, params, seed, steps, drift_every, env="forest_cover", shifts=None):
     """Worker job: build data/stream/policy, return (rewards, best, seconds, diagnostics).
 
     best = per-step reward of the best possible choice: Forest Cover uses the paper's constant 0.93
     reference instead (best=None); MIND = best available arm (dynamic regret, plan Q17).
     env "mind_small" / "mind_large": one pass over the seed's 90% of users (steps ignored); n_actions comes
     from the data (context size d is set in the config); the popularity reference line gets the run's own
-    click shares (hindsight, Q21).
+    click shares (hindsight, Q21) — always from the unshifted data, so in E4 it "knows the old world, never
+    adapts" (phase-5d R3). shifts: E4's planted relabelling steps (phase-5d), passed to mind_stream.
     """
     with threadpool_limits(1):  # one BLAS thread per parallel job
         if env == "forest_cover":
@@ -65,7 +66,7 @@ def run_one(cls, params, seed, steps, drift_every, env="forest_cover"):
             data = load_mind(env.removeprefix("mind_"))
             rows = mind_rows(data, seed)
             R = data["R"][rows]
-            stream, best, n_actions = mind_stream(data, rows), R.max(1), R.shape[1]
+            stream, best, n_actions = mind_stream(data, rows, shifts), R.max(1), R.shape[1]  # max unchanged by roll
             if cls is PopularityPolicy:
                 params = {**params, "shares": R.mean(0)}
             if "d" in inspect.signature(cls).parameters and params.get("d") != data["X"].shape[1]:

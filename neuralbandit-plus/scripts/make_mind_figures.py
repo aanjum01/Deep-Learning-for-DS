@@ -16,7 +16,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from evaluation.environments import load_mind, mind_rows  # noqa: E402
+from evaluation.environments import day_starts, load_mind, mind_rows  # noqa: E402
 
 NAME, FIG = "phase5c_mind_e3", ROOT / "results/figures"
 FIG.mkdir(parents=True, exist_ok=True)
@@ -50,7 +50,7 @@ print(table.round(4).to_string())
 
 # (1) Cumulative regret vs step, mean ± std, day boundaries = mean day-start step over seeds (plan Q8)
 rows = {s: mind_rows(data, s) for s in seeds}
-starts = np.mean([np.flatnonzero(np.diff(day[r].astype(np.int64))) + 1 for r in rows.values()], axis=0)
+starts = day_starts(data, seeds)
 fig, ax = plt.subplots(figsize=(8, 4.5))
 for label, d in pd.read_csv(ROOT / f"results/{NAME}_regret.csv").groupby("label", sort=False):
     m, s = d.groupby("step").cum_regret.mean(), d.groupby("step").cum_regret.std()

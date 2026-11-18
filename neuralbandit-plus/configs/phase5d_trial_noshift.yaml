@@ -1,0 +1,14 @@
+# Phase 5d rehearsal (S5), no-shift twin: MIND-small, seed 100, all 6 algorithms with the 5c settings.
+name: phase5d_trial_noshift
+env: mind_small
+seeds: [100]
+algorithms:
+  - {label: Random, class: RandomPolicy, params: {}}
+  - {label: Popularity, class: PopularityPolicy, params: {}}  # hindsight reference line, not a baseline (Q7)
+  # alpha = 0.5: best total reward in phase5_mind_tune (Phase 5b, Nov 16)
+  - {label: LinUCB, class: LinUCB, params: {alpha: 0.5, d: 19}}
+  # C = 1, lambda = 1: best total reward on all seeds in phase5c_tune_nb1 (Nov 16, user-confirmed); gamma = paper (Q2)
+  - {label: NB1, class: NeuralBandit1, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19}}
+  # paper §5 p. 5: full grid, gamma = 0.005, gamma_model = 0.1 (Q2, Q3)
+  - {label: NB2, class: NeuralBandit2, params: {hidden: [1, 5, 25, 50, 100], lam: [0.01, 0.1, 1], gamma: 0.005, gamma_model: 0.1, d: 19}}
+  - {label: NB3, class: NeuralBandit3, params: {hidden: [1, 5, 25, 50, 100], lam: [0.01, 0.1, 1], gamma: 0.005, gamma_model: 0.1, d: 19}}

@@ -116,6 +116,32 @@ the arXiv author line also omits the accent ("Raphael Feraud"). We cite the work
 | DOI | 10.1093/biomet/41.1-2.100 (OUP); also 10.2307/2333009 (JSTOR) | Crossref |
 | Verified | 2026-11-12 | |
 
+### R10 `shaker2015recovery` — Recovery analysis (adaptation-time measure) ✅
+| Field | Value | Source |
+|---|---|---|
+| Title | Recovery analysis for adaptive learning from non-stationary data streams: Experimental design and case study | Crossref; OpenAlex; authors' draft PDF (title page) |
+| Authors | Ammar Shaker, Eyke Hüllermeier | Crossref; OpenAlex; draft PDF |
+| Venue | Neurocomputing, vol. 150 | Crossref; OpenAlex; draft PDF ("to be published in Neurocomputing") |
+| Pages / Year | 250–264 / 2015 (volume issued Feb 2015) | Crossref; OpenAlex (pages) |
+| DOI | 10.1016/j.neucom.2014.09.076 | Crossref; OpenAlex |
+| Earlier version | CORES 2013 (Adv. Intell. Syst. Comput. 226), pp. 289–298, DOI 10.1007/978-3-319-00969-8_28 — "Recovery Analysis for Adaptive Learning from Non-stationary Data Streams" | Crossref |
+| Discrepancy | OpenAlex gives publication date 2014-10-18 (online first); Crossref's issued date is 2015-02 (volume). Cite **2015** (volume year) | |
+| Read | authors' draft PDF, cs.uni-paderborn.de/…/Recovery-draft.pdf, 35 pp., read 2026-11-17 (§3, §5) | |
+| Not reachable automatically | ScienceDirect (403), Paderborn RIS (connection refused), DBLP (blocks scripts) | |
+| Verified | 2026-11-17 | |
+
+### R11 `garivier2011upper` — Switching bandits: sliding-window / discounted UCB ✅ (paper not yet read)
+| Field | Value | Source |
+|---|---|---|
+| Title | On Upper-Confidence Bound Policies for Switching Bandit Problems | Crossref; OpenAlex |
+| Authors | Aurélien Garivier, Eric Moulines (OpenAlex: "Éric") | Crossref; OpenAlex; arXiv |
+| Venue | Algorithmic Learning Theory (ALT 2011), Lecture Notes in Computer Science | Crossref; OpenAlex |
+| Pages / Year | 174–188 / 2011 | Crossref; OpenAlex |
+| DOI | 10.1007/978-3-642-24412-4_16 | Crossref; OpenAlex |
+| LNCS volume | 6925 `[UNVERIFIED]` (only in a search-engine summary; Springer page requires login) | |
+| Preprint | arXiv:0805.3415 [math.ST], v1 22 May 2008, 24 pp., titled "On Upper-Confidence Bound Policies for **Non-Stationary** Bandit Problems", same authors, describes discounted and sliding-window UCB — title differs; that it is the same work as the ALT paper is **not confirmed** | arXiv abs page |
+| Verified | 2026-11-17 (metadata only; content claims need the paper read first) | |
+
 ---
 
 ## Part 2 — Claims about other papers (exact locations)
@@ -151,6 +177,9 @@ Page numbers for R1 refer to the provided PDF (arXiv v1).
 | C25 | ⚠️ MIND-small: **50,000 users in each file**, 94,057 distinct overall (5,943 in both) — the site says "50,000 users" (C20) | counted 2026-11-16 | discrepancy, flagged to user |
 | C26 | ⚠️ MIND-small has **5,452 impressions with an empty history**, although the MIND paper says only non-empty-history samples were kept (C19, full MIND) | counted 2026-11-16 | discrepancy, flagged to user |
 | C24 | LinUCB's Yahoo! news experiment: raw features normalised to unit length and "augmented … with a constant feature of value 1"; the final user feature is 5 cluster memberships "normalized so that they sum up to unity" **plus** "a constant feature 1" (six-vector) | R3 §5 (feature construction), p. 6 (arXiv 1003.0146v1, read 2026-11-16) | ✅ |
+| C29 | Recovery analysis: semi-synthetic drift on real data; mixture stream with sigmoid λ(t) = (1+exp(4(t−t₀)/w))⁻¹; speeds slow θ=π/75, modest π/30, sudden π/2 ("concept shift"); reference curves α(t), β(t) = same learner on the pure streams; test-then-train evaluation, averaged over repeated runs | R10 §3.1 Eq. 1–2, §3.5, §5 (draft pp. 5–6, 9–10, 12) | ✅ |
+| C30 | "Duration" = (t₂ − t₁)/T, t₁ = when the drifting curve drops below 95% of the pre-change curve, t₂ = when it recovers to 95% of the post-change curve; "maximum performance loss" = max_t (S(t) − S_C(t))/S(t), S = min(S_A, S_B) | R10 §3.3, Eq. 8 (draft p. 8) | ✅ |
+| C31 | Drift in multiclass data simulated by "a cyclic shift of the class labels, replacing label i by 1 + i mod 5" (Page Blocks; same for Letter Recognition) | R10 §5.2 (draft p. 14) | ✅ |
 | C23 | LinUCB is defined for a per-trial arm set A_t ("observes the current user u_t and a set A_t of arms"); motivation: "dynamically changing pools of content"; LinUCB "works well for a dynamic arm set" (editors add/remove articles); with fixed A_t of K arms the bound is Õ(√(KdT)) | R3 abstract p. 1; §2.1 p. 2; §3.1 p. 3 (arXiv 1003.0146v1, read 2026-11-16) | ✅ |
 
 ---
