@@ -1,0 +1,4 @@
+algorithm,shift,window,clicks_lost_mean,clicks_lost_std,shifted_clicks_mean,click_rate,entered_at,max_loss,recovered,duration,since_shift
+NB1-Fade_20k,1,"[50000, 100000)",78.0,,22312.0,0.44624,1.0,0.027587595650422903,True,0,0
+NB1-Fade_20k,2,"[100000, 150000)",126.0,,19861.0,0.39722,1.0101679929266136,0.06999732834624628,True,4955,13091
+NB1-Fade_20k,3,"[150000, 200000)",522.0,,21853.0,0.43706,1.005338904363974,0.10365581810075786,True,10016,11208

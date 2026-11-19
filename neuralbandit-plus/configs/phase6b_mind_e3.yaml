@@ -1,0 +1,14 @@
+# Phase 6b: E3 = the real MIND week, NB1-SW at the 7 window sizes of plan phase-6b.md R1.
+# 10k/20k/50k = count-based (same number of interactions as tuned); 99k/197k/493k/987k = time-span (tuned sizes x 9.868, Q4/R1). All reported, none picked by E4.
+# R = W // 5 derived (Q3). Baselines are not rerun: saved runs in phase5c_mind_e3 / phase5d_mind_e4.
+name: phase6b_mind_e3
+env: mind_large
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+algorithms:
+  - {label: NB1-SW_W10k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 10000}}
+  - {label: NB1-SW_W20k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 20000}}
+  - {label: NB1-SW_W50k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 50000}}
+  - {label: NB1-SW_W99k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 99000}}
+  - {label: NB1-SW_W197k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 197000}}
+  - {label: NB1-SW_W493k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 493000}}
+  - {label: NB1-SW_W987k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 987000}}

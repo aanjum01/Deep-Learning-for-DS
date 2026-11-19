@@ -1,0 +1,12 @@
+# Phase 6b tuning (plan phase-6b.md Q4, R2): NB1 with a sliding window on MIND-small, one pass, no shifts, seeds 100-102.
+# W in {10k, 20k, 50k, 100k} steps; R = W // 5 is derived (Q3), never configured. NB1 settings as phase5c (C = 1, lambda = 1, gamma = 0.005, d = 19).
+# Plain NB1 is the no-window reference. Chosen W = smallest windowed W within 2 x combined SE of the best total reward (Q4, R2).
+name: phase6b_tune_mind
+env: mind_small
+seeds: [100, 101, 102]
+algorithms:
+  - {label: NB1, class: NeuralBandit1, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19}}
+  - {label: NB1-SW_W10k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 10000}}
+  - {label: NB1-SW_W20k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 20000}}
+  - {label: NB1-SW_W50k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 50000}}
+  - {label: NB1-SW_W100k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 100000}}

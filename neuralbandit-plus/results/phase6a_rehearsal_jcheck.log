@@ -1,0 +1,30 @@
+== phase6a_trial_noshift 01:20:32
+           mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                            
+NeuralUCB     0.362424      132237.0            0.37672               NaN             4060.368682
+== phase6a_trial 01:21:27
+           mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                            
+NeuralUCB     0.287277      147823.0            0.27383               NaN             4167.956702
+== phase6a_trial_fstat 01:22:20
+           mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                            
+NeuralUCB      0.35114       28943.0                NaN               NaN             1974.258759
+== phase6a_trial_frot 01:22:49
+           mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                            
+NeuralUCB      0.23566       34717.0                NaN               NaN             1980.647983
+algorithm  shift           window  clicks_lost_mean  clicks_lost_std  shifted_clicks_mean  click_rate  entered_at  max_loss  recovered  duration  since_shift
+NeuralUCB      1  [50000, 100000)            4171.0              NaN              14779.0       0.296        1.00     0.389      False     48993        50000
+NeuralUCB      2 [100000, 150000)            7318.0              NaN              10872.0       0.217        0.86     0.512      False     50000        50000
+NeuralUCB      3 [150000, 200000)            2715.0              NaN              16392.0       0.328        0.66     0.424      False     57406        57406
+== jcheck 01:23:20
+          mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                           
+NUCB_J10     0.359361      132806.0           0.372100          0.004387             1595.352573
+NUCB_J50     0.364419      131758.0           0.373697          0.000501              801.297477
+          mean_reward   final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                            
+NUCB_J10     0.594921  167539.333331           0.678393          0.003290             1509.422282
+NUCB_J50     0.607907  161046.333331           0.684263          0.004813              772.515344
+== done 01:38:35

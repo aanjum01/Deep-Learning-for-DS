@@ -1,0 +1,2 @@
+label,seed,mean_reward,last100k_acc,final_regret,seconds,steps_per_sec_parallel
+NB1-SW_W20k,100,0.43441848355399554,0.42996,117305,28.80285570793785,7200.8832076619565

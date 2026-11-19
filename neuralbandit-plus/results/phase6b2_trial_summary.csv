@@ -1,0 +1,2 @@
+label,seed,mean_reward,last100k_acc,final_regret,seconds,steps_per_sec_parallel
+NB1-Fade_20k,100,0.43400865934447413,0.42509,117390,8.834494750015438,23476.837767053694

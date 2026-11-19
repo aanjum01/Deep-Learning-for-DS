@@ -1,0 +1,9 @@
+# Phase 6c (plan phase-6c.md step 7): A/B on MIND-large E4 (real week + 3 planted shifts), seeds 0-9. Base fade 1/987k (6b2 headline);
+# PH lambda 219.9 (A) / 90.9 (B), set on MIND-small only and used unchanged (per-step rule R1; user Nov 18: report as is); boost 1/20k for 20k steps.
+name: phase6c_mind_e4
+env: mind_large
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+shifts: [300000, 1000000, 1500000]
+algorithms:
+  - {label: NB1-Ctrl_A, class: NeuralBandit1Ctrl, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00000101317123, threshold: 219.9, controller: rule, boost_rho: 0.00005, boost_length: 20000}}
+  - {label: NB1-Ctrl_B, class: NeuralBandit1Ctrl, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00000101317123, threshold: 90.9, controller: rule, boost_rho: 0.00005, boost_length: 20000}}

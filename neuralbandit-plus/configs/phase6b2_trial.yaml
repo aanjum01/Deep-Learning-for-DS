@@ -1,0 +1,7 @@
+# Phase 6b2 rehearsal: shifted run, MIND-small, seed 100, shifts scaled to 50k/100k/150k. Mechanics only - nothing is tuned from it.
+name: phase6b2_trial
+env: mind_small
+seeds: [100]
+shifts: [50000, 100000, 150000]
+algorithms:
+  - {label: NB1-Fade_20k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00005}}  # 1/20k

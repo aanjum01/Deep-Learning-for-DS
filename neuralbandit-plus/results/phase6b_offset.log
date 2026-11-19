@@ -1,0 +1,9 @@
+== phase6b_offset_mind_e3 16:12:58 System-wide memory free percentage: 72%
+                  mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                                   
+NB1-SW_W493k_off      0.42625     1172550.9            0.41773          0.003096             2680.207548
+== phase6b_offset_mind_e4 16:38:15 System-wide memory free percentage: 70%
+                  mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                                   
+NB1-SW_W493k_off     0.440517     1143397.3            0.46817          0.000899             2881.290921
+== done 17:01:54

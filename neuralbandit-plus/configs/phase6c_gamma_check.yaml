@@ -1,0 +1,10 @@
+# Phase 6c step 1 (plan phase-6c.md, Q8/R2): fixed-gamma check. NB1 + slow fade (1/100k, the MIND-small headline) on MIND-small,
+# one pass, no shifts, seeds 100-102. gamma 0.005 = the paper's value; 0 = no exploration plays (they never train NB1 under Eq. 1).
+name: phase6c_gamma_check
+env: mind_small
+seeds: [100, 101, 102]
+algorithms:
+  - {label: Fade100k_g0, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.0, d: 19, rho: 0.00001}}
+  - {label: Fade100k_g0.005, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00001}}
+  - {label: Fade100k_g0.02, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.02, d: 19, rho: 0.00001}}
+  - {label: Fade100k_g0.05, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.05, d: 19, rho: 0.00001}}

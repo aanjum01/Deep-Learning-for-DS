@@ -1,0 +1,19 @@
+candidates,window,beaten,by,decides
+fades,W10k,False,,True
+fades,W20k,True,NB1-Fade_20k,True
+fades,W50k,False,,True
+fades,W99k,False,,False
+fades,W197k,False,,False
+fades,W493k,False,,False
+fades,W987k,False,,False
+NB1 (placebo),W10k,False,,True
+NB1 (placebo),W20k,False,,True
+NB1 (placebo),W50k,False,,True
+NB1 (placebo),W99k,False,,False
+NB1 (placebo),W197k,False,,False
+NB1 (placebo),W493k,False,,False
+NB1 (placebo),W987k,False,,False
+fades,small windows beaten,1,,True
+NB1 (placebo),small windows beaten,0,,True
+decision,fade rate if >= 2 of 3 small windows beaten else window,window,,True
+placebo_ok,NB1 beats < 2 small windows,True,,True

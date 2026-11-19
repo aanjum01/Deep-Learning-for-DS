@@ -1,0 +1,6 @@
+# Phase 6b2 rehearsal: no-shift twin, MIND-small, seed 100. Mechanics only - nothing is tuned from it.
+name: phase6b2_trial_noshift
+env: mind_small
+seeds: [100]
+algorithms:
+  - {label: NB1-Fade_20k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00005}}  # 1/20k

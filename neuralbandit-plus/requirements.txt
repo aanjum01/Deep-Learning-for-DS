@@ -17,6 +17,7 @@ pyparsing==3.3.3
 pytest==9.2.0
 python-dateutil==4.0.0
 pyyaml==6.0.3
+river==0.27.0
 scikit-learn==1.9.1
 scipy==1.17.1
 threadpoolctl==3.8.0

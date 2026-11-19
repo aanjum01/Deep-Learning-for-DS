@@ -1,0 +1,8 @@
+# Phase 6b rehearsal (plan phase-6b.md section 7, item 2): shifted run, MIND-small, seed 100, shifts scaled to 50k/100k/150k. Mechanics only - nothing is tuned from it.
+# W = 20000 (R = 4000 derived, Q3).
+name: phase6b_trial
+env: mind_small
+seeds: [100]
+shifts: [50000, 100000, 150000]
+algorithms:
+  - {label: NB1-SW_W20k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 20000}}

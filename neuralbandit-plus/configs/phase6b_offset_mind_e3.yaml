@@ -1,0 +1,8 @@
+# Phase 6b reset-timing check (RESEARCH_LOG §6, user Nov 18): headline W = 493k with its reset schedule offset by R/2 = 49,300 steps
+# (resets at t ≡ 49,300 mod 98,600 instead of t ≡ 0). Same NB1 settings and seeds as phase6b_mind_e3. Compared with NB1-SW_W493k and NB1.
+name: phase6b_offset_mind_e3
+env: mind_large
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+algorithms:
+  - {label: NB1-SW_W493k_off, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 493000, offset: 49300}}

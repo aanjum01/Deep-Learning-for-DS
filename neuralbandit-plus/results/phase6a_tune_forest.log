@@ -1,0 +1,29 @@
+== tune_forest 06:53:24
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: overflow encountered in square
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: invalid value encountered in multiply
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: overflow encountered in square
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: invalid value encountered in multiply
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: overflow encountered in square
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: invalid value encountered in multiply
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: overflow encountered in square
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: invalid value encountered in multiply
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: overflow encountered in square
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: invalid value encountered in multiply
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:444: UserWarning: resource_tracker: There appear to be 14 leaked semlock objects to clean up at shutdown: {'/loky-4825-37tiswtf': 1, '/loky-4825-62vbniqs': 1, '/loky-4825-t38f_ort': 1, '/loky-4825-ce13u7_u': 1, '/loky-4825-dsyamhne': 1, '/loky-4825-nd_6b3_z': 1, '/loky-4825-sxc9zqq0': 1, '/loky-4825-p4zblb5e': 1, '/loky-4825-gw8lpkfy': 1, '/loky-4825-n2f7nhq2': 1, '/loky-4825-b5sqydwp': 1, '/loky-4825-d1x488jb': 1, '/loky-4825-ys3zge88': 1, '/loky-4825-vsvubzl6': 1}
+  warnings.warn(
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:444: UserWarning: resource_tracker: There appear to be 2 leaked folder objects to clean up at shutdown: {'/var/folders/z2/n6v8lb315hx5bpl1kqqr03840000gn/T/joblib_memmapping_folder_4825_506ba11e35934292869106e0e8b1ec08_55cf60b6a8a64b3eb7b562e4deac0511': 1, '/var/folders/z2/n6v8lb315hx5bpl1kqqr03840000gn/T/joblib_memmapping_folder_4825_506ba11e35934292869106e0e8b1ec08_39ec385866274257b740a20e51ded249': 1}
+  warnings.warn(
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:468: UserWarning: resource_tracker: /var/folders/z2/n6v8lb315hx5bpl1kqqr03840000gn/T/joblib_memmapping_folder_4825_506ba11e35934292869106e0e8b1ec08_55cf60b6a8a64b3eb7b562e4deac0511: FileNotFoundError(2, 'No such file or directory')
+  warnings.warn('resource_tracker: %s: %r' % (name, e))
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/externals/loky/backend/resource_tracker.py:468: UserWarning: resource_tracker: /var/folders/z2/n6v8lb315hx5bpl1kqqr03840000gn/T/joblib_memmapping_folder_4825_506ba11e35934292869106e0e8b1ec08_39ec385866274257b740a20e51ded249: FileNotFoundError(2, 'No such file or directory')
+  warnings.warn('resource_tracker: %s: %r' % (name, e))

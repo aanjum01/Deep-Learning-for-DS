@@ -1,4 +1,4 @@
-# NeuralBandit++: Drift-Adaptive Neural Contextual Bandits with NeuralUCB, Sliding-Window Memory, and an LLM Controller
+# NeuralBandit++: Drift-Adaptive Neural Contextual Bandits with Gradual Forgetting and an LLM Controller
 
 Final project for **Deep Learning for Data Science** (Columbia University, Fall 2026).
 Author: Ahad Anjum Sadaqat
@@ -16,9 +16,13 @@ This project:
 1. **Reproduces** *A Neural Networks Committee for the Contextual Bandit Problem* (Robin Allesiardo, Raphaël Féraud & Djallel Bouneffouf, [arXiv:1409.8191v1](https://arxiv.org/abs/1409.8191), 2014; published at ICONIP 2014), which introduced **NeuralBandit1/2/3**.
 2. **Identifies a gap:** NeuralBandit explores with a *fixed* rate γ, has no explicit mechanism to detect or respond to drift, and its model-selection variants need **75k–350k steps** to re-stabilize after a drift.
 3. **Proposes NeuralBandit++**, which combines:
-   - **NeuralUCB**: uncertainty-aware exploration instead of fixed random exploration;
-   - **Sliding-window memory**: trains on recent, relevant interactions only;
-   - **A structured LLM workflow**: task-specific agents that periodically monitor drift, decide how much old data to forget, and tune exploration. NeuralUCB still chooses every action.
+   - **NeuralBandit1** as the base learner (the best and fastest of NB1–3 on MIND);
+   - **Gradual forgetting**: NB1's weights fade slowly back toward their starting values, so old lessons weaken unless recent data keeps reinforcing them ("L2 Init", Kumar, Marklund & Van Roy, CoLLAs 2024);
+   - **A structured LLM workflow**: task-specific agents that periodically monitor drift, decide how much old data to forget, and tune NB1's exploration rate, so exploration adapts to drift instead of staying fixed. NB1 still chooses every action.
+
+   > **Change from the approved abstract (Nov 18, 2026, approved by the instructor):** the abstract proposed NeuralUCB as the base learner. NeuralUCB was built and tuned (Phase 6a), but on MIND-small it scored 41.8% clicks vs. 43.7% for LinUCB and 44.6% for NB1, and its runs were far slower. The base is therefore NB1. Fixed exploration is replaced by *drift-adaptive* exploration (the controller sets γ), not NeuralUCB's per-context uncertainty bonus, and no regret guarantee is claimed.
+
+   > **Second change (Nov 18, 2026):** the abstract's *sliding-window memory* was built and tested (Phase 6b) but replaced by *gradual forgetting* (Phase 6b part 2). On MIND the window adapted fast but cost 1–3 points of clicks, sometimes left NB1 stuck at random-level play after a rebuild ("dead-arm trap"), and its results depended on when its rebuilds happened. Gradual forgetting adapted faster than NB1 at every planted shift while keeping NB1's click rate, and never got stuck. The idea, forgetting old data so the model can follow drift, is unchanged.
 4. **Evaluates** against the original NeuralBandit1/2/3 and the classical LinUCB baseline on Forest Cover Type and Microsoft **MIND**, using identical environments and evaluation protocols for every method, with ablations of each main component.
 
 **Primary research question:** *Can NeuralBandit++ adapt faster after concept drift than the original NeuralBandit, without sacrificing cumulative reward?*
@@ -32,25 +36,25 @@ This project:
                         │
                         ▼
    ┌──────────────────────────────────────────┐
-   │ NeuralUCB  (neural reward model + UCB)   │──► action a_t ──► reward r_t
-   │ trained on a sliding window of history   │                      │
+   │ NB1  (one neural net per action)         │──► action a_t ──► reward r_t
+   │ weights fade toward their start (ρ)      │                      │
    └──────────────────────────────────────────┘                      │
                         ▲                                            │
-     window size,       │                                            │
-     exploration α,     │   every N rounds: summary statistics       │
+     fade rate ρ,       │                                            │
+     exploration γ,     │   every N rounds: summary statistics       │
      reset signals      │   (recent reward, uncertainty, trends)     │
                         │                                            │
    ┌──────────────────────────────────────────┐                      │
    │ LLM controller                           │◄─────────────────────┘
    │  • Drift Monitor agent                   │
    │  • Memory Manager agent  (forgetting)    │
-   │  • Exploration Tuner agent (α)           │
+   │  • Exploration Tuner agent (γ)           │
    └──────────────────────────────────────────┘
 ```
 
-- The controller runs every *N* rounds (not every round). It reads only aggregate statistics and never the absolute time step, and its outputs are schema-validated and clipped to safe bounds, with a no-change fallback.
-- A **rule-based controller** (Page-Hinkley / ADWIN drift detector + fixed rules) serves as the non-LLM counterpart, isolating what the LLM itself contributes.
-- NeuralUCB's Õ(d̃√T) regret guarantee (Zhou, Li & Gu, ICML 2020, Theorem 4.5 / Remark 4.8; d̃ is the effective dimension) applies to its stationary setting. Here it motivates the design and is not claimed for the windowed, controller-tuned variant.
+- The controller is **event-triggered**: NB1 always fades slowly, and a Page-Hinkley test watches NB1's surprise (reward minus its own estimate) for a drop. Only on an alarm does the controller act, boosting the fade rate for a while. It reads only aggregate statistics and never the absolute time step, and its outputs are validated, with a no-change fallback. (Phase 6c found that changing the exploration rate γ never helps NB1, because NB1's update never learns from exploration plays, so the controller adjusts only forgetting.)
+- A **rule-based controller** (the same Page-Hinkley alarm + a fixed boost: fade 1/20k for 20k steps) serves as the non-LLM counterpart, isolating what the LLM itself contributes.
+- NeuralUCB (Zhou, Li & Gu, ICML 2020) was the abstract's original base learner; its Õ(d̃√T) regret guarantee (Theorem 4.5 / Remark 4.8) assumes a fixed reward function, i.e. no drift. It is reported only as the method tried and replaced (see the note in §1).
 
 ---
 
@@ -63,7 +67,7 @@ neuralbandit-plus/
 ├── algorithms/      Bandit policies: Random, LinUCB, NeuralBandit 1/2/3, NeuralUCB
 ├── models/          Neural reward models: batched per-arm MLPs, shared (user, item) scorer
 ├── exploration/     ε-greedy, EXP3 (log-space), UCB, Thompson sampling, uncertainty estimates
-├── nonstationary/   Sliding window, drift detectors (Page-Hinkley, ADWIN), drift generators
+├── nonstationary/   Gradual forgetting (fade toward init), sliding window (tested, rejected), drift detectors
 ├── llm/             Article embeddings, cached LLM client, agents, LLM + rule-based controllers, prompts/
 ├── evaluation/      Environments (Forest Cover, MIND), experiment runner, metrics, statistics, plots
 │
@@ -119,8 +123,8 @@ python scripts/mind_facts.py --size small        # optional: data facts (aggrega
 | ID | Environment | Algorithms | Purpose |
 |---|---|---|---|
 | **E1** | Forest Cover, stationary | Random, LinUCB, NB1, NB2, NB3 | Reproduce the paper (reported: NB2 76%, NB3 73%, LinUCB 72%, measured as classification rate over the last 100k predictions) |
-| **E2** | Forest Cover, class rotation (1→2→…→7→1) every 500k steps | E1 + NeuralUCB variants + rule / LLM controller | Compare recovery time with the paper's 75k–350k steps |
-| **E3** | MIND, the real week in time order | LinUCB, NB1–3, NeuralUCB variants + controllers | Natural interest drift (strong, event-like daily swings in category clicks) |
+| **E2** | Forest Cover, class rotation (1→2→…→7→1) every 500k steps | E1 + full model (NB1 + fading + controller) | Compare recovery time with the paper's 75k–350k steps |
+| **E3** | MIND, the real week in time order | LinUCB, NB1–3, full model + ablations | Natural interest drift (strong, event-like daily swings in category clicks) |
 | **E4** | E3 plus 3 planted shifts (cyclic relabelling of the 16 category arms at steps 300k, 1M, 1.5M, fixed by a data-only rule before any run) | Same as E3 | Precise adaptation measurement vs the same seed's E3 run: clicks lost per shift + adaptation time (Shaker & Hüllermeier 2015) |
 
 **Baselines.** Following the course requirements, the baselines are NeuralBandit1, NeuralBandit2, NeuralBandit3 and one classical contextual bandit, **LinUCB** (chosen because the instructor's success criterion is defined against it). Random is included only as a sanity reference. All baselines run in every environment (E1–E4) under the same evaluation protocol as the proposed method. Banditron and CTS, which appear in the original paper's Figure 1, are out of scope.
@@ -135,10 +139,12 @@ Confirmed by the course instructor: reproduction is judged by **cumulative regre
 ### Ablations
 Each ablation removes one component from the full model, to measure what actually caused the improvement:
 - Full NeuralBandit++ (reference)
-- − LLM controller (no controller)
+- − controller (NB1 + a fixed fade rate, no controller)
 - LLM controller → rule-based controller (Page-Hinkley / ADWIN)
-- − UCB (fall back to ε-greedy exploration)
-- − sliding window
+- − adaptive exploration (the controller may not change NB1's γ; replaces the abstract's "− UCB")
+- − forgetting (the controller sets γ only; no fade; replaces the abstract's "− sliding window")
+
+The sliding window is not an ablation (it is not part of the final model); it appears as a design comparison: 7 window sizes vs 8 fade rates on MIND E3/E4 (Phases 6b and 6b part 2).
 
 ```bash
 python scripts/run_experiment.py --config configs/e1_forest_stationary.yaml
@@ -186,13 +192,15 @@ A partial, unlicensed implementation by the original first author ([TheAmazingEl
 - [x] Baselines (Random, LinUCB) + runner + metrics — LinUCB 71.9% vs. paper's 72%
 - [x] NeuralBandit1 — 82.0% stationary; beats LinUCB on regret in both panels
 - [x] NeuralBandit 2/3 + EXP3 → **E1/E2 reproduction**: NB2 80.8% (paper 76%), NB3 72.5% (paper 73%); NB2 beats LinUCB on regret in both panels
-- [ ] 6a NeuralUCB alone (reported method, E1–E4)
-- [ ] 6b + sliding window · 6c rule-based controller (build + tune; full runs in 6e)
+- [x] 6a NeuralUCB built + tuned on MIND-small (41.8% clicks, below LinUCB/NB1) → base switched to NB1 (Nov 18, instructor-approved); phase closed, no full runs
+- [x] 6b NB1 + sliding window (reset + retrain on the last W steps; tuned W 50k on MIND-small → 493k on MIND-large; 7 sizes × E3/E4 × 10 seeds): small windows make the planted shifts nearly free (W 10k loses ≤ 0.3k clicks per shift vs NB1's 3.4k–6.2k) and recover in ≤ 10k steps at every shift, but cost 1–3 points of clicks on the real week; the tuned W 493k "adapted better" than NB1 at all 3 shifts, but that win vanished when its reset schedule was moved by half an interval (timing check), because resets can hit a "dead-arm trap" depending on where they land
+- [x] 6b part 2: gradual forgetting (weights fade toward their initial values, "L2 Init"; 8 rates × E3/E4 × 10 seeds): never trapped; the slowest fade keeps NB1's click rate (45.96% vs 45.97%) while losing 37% fewer clicks per shift and adapts better than NB1 at all 3 shifts; chosen as NeuralBandit++'s forgetting method (Nov 18); a pre-registered pairwise rule favoured the smallest windows (which give up 2–3 points of clicks) and is reported as such
+- [x] 6c rule-based controller (slow fade + Page-Hinkley alarm on NB1's surprise + fixed fade boost; thresholds set on MIND-small by an alarm budget): rule A loses 33% fewer clicks per shift than the slow fade and adapts faster at every shift, but costs 0.18 points on the real week, because about 5 alarms per run fire on natural news events, which the LLM controller (6d) must learn to skip. Changing γ never helps NB1, so the controller adjusts forgetting only
 - [x] MIND environment (category arms, masking) — LinUCB 43.7% clicks vs. popularity 36.0%, Random 19.9% (MIND-small, α = 0.5)
 - [ ] 6d LLM controller and agents → full model, E1–E4
 - [x] Baselines on MIND E3 (real week, MIND-large, 10 seeds): NB1 46.0%, NB2 45.6%, LinUCB 44.7%, NB3 43.6% clicks (popularity 37.2%, Random 20.4%)
 - [x] E4 (planted shifts) design + baselines: every learner recovers; after shifts 2–3 NB1/NB2 lose ~6k clicks vs LinUCB ~24–29k; adaptation slows with each shift (NB1 14k → 47k → 114k steps)
-- [ ] 6e ablations (MIND E3 + E4) · 6f statistics, figures (optional if time: ablations on E2; window/LLM on NB1)
+- [ ] 6e ablations (MIND E3 + E4) · 6f statistics, figures (optional if time: ablations on E2)
 - [ ] Paper (ACM WWW format, due Dec 1, 2026)
 - [ ] Presentation and demo (Dec 14, 2026)
 

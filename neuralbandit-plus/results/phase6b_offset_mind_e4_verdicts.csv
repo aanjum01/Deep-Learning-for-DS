@@ -1,0 +1,91 @@
+shift,A,B,verdict
+1,LinUCB,NB1,trades performance for robustness
+1,LinUCB,NB2,trades performance for robustness
+1,LinUCB,NB3,better
+1,LinUCB,NB1-SW_W493k,trades performance for robustness
+1,LinUCB,NB1-SW_W493k_off,trades performance for robustness
+1,NB1,LinUCB,worse
+1,NB1,NB2,no clear difference
+1,NB1,NB3,no clear difference
+1,NB1,NB1-SW_W493k,worse
+1,NB1,NB1-SW_W493k_off,worse
+1,NB2,LinUCB,worse
+1,NB2,NB1,no clear difference
+1,NB2,NB3,no clear difference
+1,NB2,NB1-SW_W493k,worse
+1,NB2,NB1-SW_W493k_off,worse
+1,NB3,LinUCB,worse
+1,NB3,NB1,no clear difference
+1,NB3,NB2,no clear difference
+1,NB3,NB1-SW_W493k,worse
+1,NB3,NB1-SW_W493k_off,worse
+1,NB1-SW_W493k,LinUCB,worse
+1,NB1-SW_W493k,NB1,better
+1,NB1-SW_W493k,NB2,better
+1,NB1-SW_W493k,NB3,better
+1,NB1-SW_W493k,NB1-SW_W493k_off,worse
+1,NB1-SW_W493k_off,LinUCB,worse
+1,NB1-SW_W493k_off,NB1,trades performance for robustness
+1,NB1-SW_W493k_off,NB2,better
+1,NB1-SW_W493k_off,NB3,better
+1,NB1-SW_W493k_off,NB1-SW_W493k,trades performance for robustness
+2,LinUCB,NB1,worse
+2,LinUCB,NB2,worse
+2,LinUCB,NB3,worse
+2,LinUCB,NB1-SW_W493k,worse
+2,LinUCB,NB1-SW_W493k_off,worse
+2,NB1,LinUCB,better
+2,NB1,NB2,no clear difference
+2,NB1,NB3,better
+2,NB1,NB1-SW_W493k,worse
+2,NB1,NB1-SW_W493k_off,worse
+2,NB2,LinUCB,better
+2,NB2,NB1,no clear difference
+2,NB2,NB3,better
+2,NB2,NB1-SW_W493k,worse
+2,NB2,NB1-SW_W493k_off,worse
+2,NB3,LinUCB,better
+2,NB3,NB1,worse
+2,NB3,NB2,worse
+2,NB3,NB1-SW_W493k,worse
+2,NB3,NB1-SW_W493k_off,worse
+2,NB1-SW_W493k,LinUCB,better
+2,NB1-SW_W493k,NB1,better
+2,NB1-SW_W493k,NB2,better
+2,NB1-SW_W493k,NB3,better
+2,NB1-SW_W493k,NB1-SW_W493k_off,no clear difference
+2,NB1-SW_W493k_off,LinUCB,better
+2,NB1-SW_W493k_off,NB1,trades performance for robustness
+2,NB1-SW_W493k_off,NB2,trades performance for robustness
+2,NB1-SW_W493k_off,NB3,better
+2,NB1-SW_W493k_off,NB1-SW_W493k,no clear difference
+3,LinUCB,NB1,worse
+3,LinUCB,NB2,worse
+3,LinUCB,NB3,worse
+3,LinUCB,NB1-SW_W493k,worse
+3,LinUCB,NB1-SW_W493k_off,worse
+3,NB1,LinUCB,better
+3,NB1,NB2,no clear difference
+3,NB1,NB3,better
+3,NB1,NB1-SW_W493k,worse
+3,NB1,NB1-SW_W493k_off,worse
+3,NB2,LinUCB,better
+3,NB2,NB1,no clear difference
+3,NB2,NB3,better
+3,NB2,NB1-SW_W493k,worse
+3,NB2,NB1-SW_W493k_off,worse
+3,NB3,LinUCB,better
+3,NB3,NB1,worse
+3,NB3,NB2,worse
+3,NB3,NB1-SW_W493k,worse
+3,NB3,NB1-SW_W493k_off,worse
+3,NB1-SW_W493k,LinUCB,better
+3,NB1-SW_W493k,NB1,better
+3,NB1-SW_W493k,NB2,better
+3,NB1-SW_W493k,NB3,better
+3,NB1-SW_W493k,NB1-SW_W493k_off,worse
+3,NB1-SW_W493k_off,LinUCB,better
+3,NB1-SW_W493k_off,NB1,better
+3,NB1-SW_W493k_off,NB2,better
+3,NB1-SW_W493k_off,NB3,better
+3,NB1-SW_W493k_off,NB1-SW_W493k,better

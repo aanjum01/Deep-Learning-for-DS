@@ -70,3 +70,40 @@ def adapts_better(lost_a, lost_b, total_a, total_b):
     if lost_a.mean() - lost_b.mean() > 2 * se:
         return "worse"
     return "no clear difference"
+
+
+def trap_blocks(rewards, block=10_000, thr=0.25, skip=()):
+    """Number of non-overlapping `block`-step blocks (from step 0) with mean reward < thr: the dead-arm trap measure
+    (plan phase-6b2 R12). Blocks starting in [s, s + block) for s in `skip` (planted shifts) are not counted."""
+    r = np.asarray(rewards, float)
+    means = r[: len(r) // block * block].reshape(-1, block).mean(1)
+    keep = ~np.isin(np.arange(len(means)), [s // block for s in skip])
+    return int((means[keep] < thr).sum())
+
+
+def two_se(a):
+    """2 x standard error of the mean of per-seed values (ddof 1)."""
+    a = np.asarray(a, float)
+    return 2 * a.std(ddof=1) / np.sqrt(len(a))
+
+
+def tradeoff_beats(rate_a, lost_a, rate_b, lost_b):
+    """Trade-off rule (plan phase-6b2, second review): does A beat B? Per-seed arrays of E3 click rate (higher is better)
+    and mean clicks lost per shift (lower is better). Better/worse = means differ by > 2x unpaired SE (ddof 1); A beats
+    B if it is worse on neither axis and better on at least one. Undefined SE (n < 2) counts as a tie."""
+    def cmp(a, b, higher_better):
+        a, b = np.asarray(a, float), np.asarray(b, float)
+        if len(a) < 2 or len(b) < 2:
+            return 0
+        se = np.sqrt(a.var(ddof=1) / len(a) + b.var(ddof=1) / len(b))
+        d = (a.mean() - b.mean()) * (1 if higher_better else -1)
+        return 0 if not np.isfinite(se) or abs(d) <= 2 * se else int(np.sign(d))
+    c = [cmp(rate_a, rate_b, True), cmp(lost_a, lost_b, False)]
+    return min(c) >= 0 and max(c) > 0
+
+
+def beaten_windows(pts, candidates, targets):
+    """For each window name in `targets` (name -> list of point labels, all of which must be beaten), the candidates that
+    beat it under tradeoff_beats. pts: label -> (per-seed E3 click rate, per-seed mean clicks lost per shift)."""
+    return {name: [c for c in candidates if all(tradeoff_beats(*pts[c], *pts[w]) for w in ws)]
+            for name, ws in targets.items()}

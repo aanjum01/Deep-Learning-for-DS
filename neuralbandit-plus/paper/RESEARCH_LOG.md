@@ -499,6 +499,185 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
     picked by its E4 result). Also: the user has ideas for the LLM controller — raise them in 6d planning. baselines on E4 keep their 5c
   settings, tuned on MIND-small **without** planted shifts; the new method must be tuned the same way —
   never on shifted data — otherwise it would get a drift-specific advantage the baselines didn't.
+- 📄 *(Nov 18, Phase 6a planning; REFERENCES_VERIFICATION C32–C40)* **NeuralUCB paper read in full (arXiv v3,
+  checked against the PMLR version) — answers the Nov 17 "[UNVERIFIED]" idea:**
+  - ✅ **Its guarantee is for a stationary world:** rewards come from **one fixed unknown function h** for every
+    round plus zero-mean noise (Eq. 2.2, p. 2); contexts may be any sequence, but the context → reward map never
+    changes. The paper never mentions drift. So E4's relabelling (and E3's natural drift) break the assumption
+    behind Õ(d̃√T) — the theory gives NeuralUCB **no** reason to adapt; any adaptation must come from training.
+    Paper sentence: "NeuralUCB's bound assumes a fixed reward function (Zhou et al., Eq. 2.2), which concept
+    drift violates; this motivates adding a sliding window and a controller."
+  - 🔍 It also trains on **all past data, restarting from θ₀ each time** (Alg. 1–2, p. 3) — with long runs this
+    remembers the old world, which is exactly what 6b's window will cut.
+  - 🔍 The bound also needs a very wide network, a specific step size and unit-norm duplicated inputs
+    (Assumption 4.2, Thm 4.5); the authors' own experiments relax all of these (m = 100, diagonal Z, constant γ,
+    tuned η) — so in practice NeuralUCB is a heuristic with a theoretically-motivated bonus, as ours will be.
+  - 🔍 The paper names NeuralBandit [allesiardo2014] directly (p. 3): "UCB … more effective than ϵ-greedy", one
+    network instead of K — but never runs it as a baseline. **Our E1–E4 runs are a direct test of that claim.**
+  - 🔍 Their real-data runs are **T = 15,000** steps (§7.2) with J = 1000 SGD steps of batch 500 every 100 rounds
+    — 5,000 gradient evaluations per new observation; our runs are 2.0–2.25M steps (×150).
+  - 🔍 The authors' code (uclaml = Prof. Gu's lab; no license → reference only) differs from the paper in init,
+    regulariser, batch size, bonus formula, and keeps only every 100th observation after round 2000 (C40).
+- 📊 *(Nov 18, Phase 6a planning)* **Measured NeuralUCB cost** (throwaway numpy prototype, paper form: disjoint
+  arms, one hidden ReLU layer, m = 100, diagonal Z; real contexts; M2): one job alone — selection + Z update
+  85 µs/step (MIND-small, K = 16, d = 19) / 71 µs (Forest Cover, K = 7, d = 94); one SGD step 0.12 ms (batch 1),
+  0.39 ms (batch 50), 0.8–0.9 ms (batch 500). **8 jobs in parallel: ×4–5 slower** (selection ≈ 420 / 320 µs,
+  batch-500 step ≈ 4 ms) — same factor as Phases 4–5. ⇒ the paper's schedule (J = 1000, batch 500, every 100
+  rounds) would take **≈ 23 h per MIND-large run** in parallel — infeasible; the authors' repo schedule ≈ 2–5 h
+  per run. Training budget is therefore a planning decision (phase-6a plan).
+- 🔍 *(Nov 18, Phase 6a review, fresh-context Opus; checked analytically)* **The paper's step-size grid does not fit
+  its own network form:** with f = √m·w₂ᵀReLU(W₁x) (Eq. 2.3) the gradient at init has ‖g‖² ≈ m‖x‖² (≈ 1,700 on
+  Forest Cover, ≈ 275 on MIND), so a plain gradient step is stable only for η ≲ 1e-3 (Forest) / 7e-3 (MIND),
+  while the paper's grid is η ∈ {2, 5}·10⁻ⁱ, i = 1…4 (up to 0.5). Scratch runs: on Forest 6 of 8 η values → NaN
+  within a few rounds. The grid likely belongs to an implementation like the authors' code (no √m, default init,
+  normalised inputs). ⚖️ **Decision (user, Phase 6a R1):** step = η/m, following Thm 4.5's η ∝ 1/m (p. 4);
+  divergent settings fail fast and count as failed (R2). Paper sentence: "the paper's η grid is applied as η/m,
+  the 1/m scaling of its Theorem 4.5, because with the √m output scaling of Eq. 2.3 the raw grid diverges."
+- 🔍 *(Nov 18, Phase 6a review)* **Paper ambiguity — training before round 2000:** §7.2 trains "every 100 rounds
+  starting from round 2000" (literally: none before), Alg. 1 trains every round; the authors' code trains every
+  round before 2000. ⚖️ We train every round before 2000 (user, R6) — 0.1% of a run.
+- 🔍 *(Nov 18, Phase 6a review, maths checked)* The paper's mirrored init on a doubled input [x, x]/√2 equals a
+  width-m net on raw x with mirrored hidden pairs (first layer [W; W]/√2, output (w, −w)): both input copies always
+  get identical updates. Same f, training path and penalty; the diagonal-Z bonus matches with g²/(2m) for the first
+  layer. Built this way (user, R5) — no doubled input.
+- ⚖️ *(Nov 18, professor via Slack + user)* **The base learner changes from NeuralUCB to NB1.** The user asked the
+  professor about compute time and NeuralUCB's MIND result. The question gave him: tuned NeuralUCB 41.8% clicks on MIND-small vs
+  LinUCB 43.7% and NB1 44.6%; about 5 h per full set of NeuralUCB runs; about 30 h of compute left before Dec 1. His
+  reply: "switching to NB1 is reasonable given the computational constraints", and "make sure to include appropriate
+  baselines and ablation studies to evaluate the contribution of each component."
+  Why NB1 and not NB2/NB3: it is the best of the three on MIND E3 (46.0% vs NB2 45.6%, NB3 43.6%), and as one
+  network instead of a 15-model committee it is ≈ 15× faster per run (≈ 3 min vs ≈ 50 min on E3, Phase 5c summary).
+  - **Why we considered switching, and why we switched (for the paper):**
+    1. *Compute.* The paper's training schedule (J = 1000 SGD steps of batch 500 every 100 rounds) would take ≈ 23 h
+       per MIND-large run (measured, entry above). On top of that, the paper's runs are 15k steps and ours are 2–2.25M. We cut
+       the schedule to J = 50 (J check) and it still cost ≈ 5 h per set of 40 full runs. NeuralUCB was the base of every later phase
+       (window, controllers, ablations): ≈ 30 h of compute left on one laptop before Dec 1, every batch run overnight,
+       no room for reruns.
+    2. *Results.* Even tuned, it scored below the simpler methods on MIND-small (41.8% vs LinUCB 43.7%, NB1 44.6%).
+       Likely causes: the cut-down training means it is undertrained; and it retrains on all past data equally, only every
+       100 rounds, so it is slow to follow MIND's natural drift. LinUCB also assumes a fixed world but updates exactly
+       after every click. Raising the training budget to close the gap would slow every later phase by the same factor.
+    3. *Theory.* Its regret guarantee assumes a fixed reward function (Eq. 2.2), so the theoretical reason for picking it
+       does not cover drift, which is the project's main question.
+    4. *The alternative.* NB1 is already the best baseline on MIND and ≈ 15× faster than NB2/NB3. Having the controller set
+       its exploration rate keeps the abstract's aim of replacing fixed exploration.
+    The instructor agreed: "switching to NB1 is reasonable given the computational constraints."
+    Suggested paper sentence: "We first implemented NeuralUCB as the base learner, but under our compute budget it had
+    to be trained far less than in its original paper, and it underperformed simpler baselines on MIND-small (41.8% vs
+    44.6% clicks for NB1). We therefore build on NB1 and make its exploration rate adaptive instead."
+  - **New full model:** NB1 + sliding window + LLM controller. The controller also sets NB1's exploration rate γ
+    (fixed at 0.005 in the paper), so exploration adapts to drift instead of staying fixed.
+  - **Deviations from the approved abstract (Oct 5), to state in the paper:**
+    1. NeuralUCB is no longer the base learner.
+    2. "Uncertainty-aware exploration" becomes **drift-adaptive exploration**: the controller changes one global γ.
+       This is not a per-context uncertainty bonus.
+    3. The near-√T regret guarantee is no longer claimed. It covered stationary data only anyway (entry above).
+    4. Ablation "−UCB" becomes **"−adaptive exploration"**: the controller is not allowed to change γ.
+  - Unchanged: the sliding window, the LLM controller with its agents, the rule-based counterpart, MIND, E1–E4,
+    the metrics, the main goal (faster adaptation after drift), and the baselines (NB1/2/3, LinUCB; Random and
+    Popularity as sanity lines).
+  - **Ablations now (leave one out of the full model):** −LLM controller (NB1 + window); LLM → rule-based
+    controller; −adaptive exploration; −sliding window.
+  - ⚖️ *(user, Nov 18)* NeuralUCB's Forest tuning was **stopped** at 67 of 128 runs, which stay saved in results/raw.
+    Forest Cover adds nothing to the main claim (adaptation on MIND). In the paper NeuralUCB is the method we tried
+    and replaced, reported with the MIND tuning numbers. **Phase 6a is closed (user, Nov 18):** no NeuralUCB full runs
+    on any dataset. The code, tests and tuning results stay in the repo as the record.
+  - ❓ For 6b planning: NB1 learns online and stores no past data, so "a sliding window on NB1" needs new design
+    work (noted Nov 17). Also: −LLM = the 6b runs and LLM → rules = the 6c runs, so only −adaptive exploration
+    and −window may need new runs (to confirm in 6e planning).
+- ⚖️ *(Nov 18, Phase 6b plan approved; `paper/plans/phase-6b.md`)* **NB1 + sliding window.**
+  - **Mechanism (Q1, Q2, Q3):** reset + retrain (abrupt forgetting). NB1 stores its logged Eq. 1 updates. Every R = W/5 steps,
+    once t > W, a fresh network learns them once, oldest first. Gradual forgetting and reset-only-on-drift were
+    rejected for 6b. Sources: Gama et al. 2014 §3.1.1–3.1.2, §3.3.1–3.3.2 (fixed sliding window = standard baseline;
+    blind vs informed adaptation).
+  - **W tuning (Q4, R2):** grid 10k/20k/50k/100k on MIND-small, seeds 100–102, no shifts. Pick the smallest windowed W within
+    2 × combined SE of the best (bigger windows stay identical to NB1 longer, so they are favoured mechanically).
+    Converted to MIND-large by time span × 9.868 (total rows 2,270,815 / 230,117).
+  - **E3 + E4 runs (Q6, R1):** 7 sizes, 10k/20k/50k (count) + 99k/197k/493k/987k (time span), 10 seeds, 140 runs.
+    Why both scales: every time-span size is longer than NB1's own recovery (14k–114k), and W ≥ 250k doesn't reset
+    before shift 1. Pre-registered: "the window hurts at shifts" is a possible result, read as a property of blind
+    windows (a rebuild from old-world rows) and the motivation for 6c/6d's triggered reset.
+  - MIND only (Q5); checkpoint before the full runs (Q7); gradual forgetting gets its own plan later (Q3b).
+  - 🔍 Literature, all papers read in full: SW-UCB (Garivier & Moulines 2011) and SW-UCB for linear bandits (Cheung et al.
+    2019) set the window from the horizon and the amount of change, which we can't know, so W is tuned. Cheung's
+    Bandit-over-Bandit (EXP3 picks the window per block, with a fresh learner each block) is the published precedent for
+    a higher-level learner choosing W (6c/6d). Dohare et al. 2024: small networks also lose plasticity, but a full
+    reinitialisation is only their (weaker) baseline. This motivates testing a reset; it doesn't show one helps NB1.
+- ⚖️ *(Nov 18, Phase 6b part 2 plan approved; `paper/plans/phase-6b2.md` rev. 3; this entry also pre-registers the decision rule, before any E3/E4 fade run)* **NB1 + gradual forgetting.**
+  - **Mechanism:** after NB1's update, at every step, every category's network (both layers) does θ ← θ − ρ(θ − θ₀) toward its
+    own initial draw. This is "L2 Init" [kumar2024 §3, App. A.3] up to an O(αρ) term. Rejected: toward zero, toward fresh
+    weights (both worse in kumar2024 §5.3), and fading only the arm that learned (scored lower on MIND-small: 0.4335 vs 0.4425 at 1/50k).
+  - **Tuning:** ρ ∈ {1/10k, 1/20k, 1/50k, 1/100k} on MIND-small, seeds 100–102, no shifts; headline = best mean (the paper's
+    rule; expected to pick the slowest fade, stated).
+  - **E3 + E4 runs:** 8 rates (the 4 as tuned, plus ÷ 9.868 = 1/99k, 1/197k, 1/493k, 1/987k), 10 seeds, 160 runs.
+  - **Decision rule (pre-registered):** each setting is a point (E3 click rate, mean clicks lost per shift). A fade beats a window
+    if it is not worse on either and better on one (2 × unpaired SE, ddof 1). **6c/6d's controller sets a fade rate if some fade beats ≥ 2 of
+    the windows 10k / 20k / 50k**; otherwise the window stays. The larger windows' clicks-lost values are distorted by the trap
+    in their no-shift twins (−2.5k to −12k per shift), so they are reported but don't decide. Placebo: plain NB1 must beat < 2 small
+    windows (on the 6b numbers it beats 0). Traps and post-shift clicks are reported, not deciding. The rule was set after seeing 6b's window
+    results and the MIND-small fade prototype, never any E4 fade result.
+  - How the rule got here: a first pair rule was too strict (a tie on E3 clicks failed). The revision was too lenient (plain NB1 would have won
+    most pairs). The trade-off rule, restricted to trustworthy windows, came out of two fresh-context reviews and the user's decisions.
+- ⚖️ *(Nov 18, user, after the 6b part 2 results)* **Gradual forgetting becomes NeuralBandit++'s forgetting method; the
+  sliding window is the method tried and rejected.**
+  - **Judged against the paper's goal** (adapt faster after drift than NB1 without losing clicks; abstract, README §1):
+    - The slow fade (1/987k) adapts better than NB1 at all 3 shifts (recovery 10k / 15k / 42k vs 11k / 45k / 113k) and keeps
+      NB1's clicks on the real week (45.96% vs 45.97%). It gets **more** total clicks on the drift data (E4 45.47% vs 45.18%) and
+      never traps.
+    - The windows adapt fast but cost 1–3 points of clicks, hit the dead-arm trap, and depend on rebuild timing (493k check).
+  - **New full model:** NB1 + gradual forgetting (fade toward θ₀) + a controller that sets the **fade rate** and the
+    exploration rate γ (6c rule-based, 6d LLM).
+  - **The pre-registered window-vs-fade rule** (which favoured the smallest windows; they give up 2–3 points of clicks) is reported
+    as one honest line in the methods, not a headline:
+    "a pre-registered pairwise rule favoured the smallest windows, which give up 2–3 points of clicks; we chose fading because it
+    meets the paper's goal". The rule was a planning tool for the knob choice; the data answering the primary question decide.
+  - **Another deviation from the abstract** (after the NB1 switch): "sliding window memory" → **gradual forgetting**. The idea
+    (forget old data so the model can follow drift) is unchanged.
+  - **Ablations** (each removes one piece of the final model):
+    - **−controller** = NB1 + fixed fade (already run: 6b part 2);
+    - **LLM → rule-based** (6c);
+    - **−adaptive exploration** (the controller sets the fade only);
+    - **−forgetting** (the controller sets γ only, no fade; replaces "−sliding window").
+    The window is **not** re-tested in the ablations, because it is not part of the final model. It appears as a design comparison
+    (6b vs 6b part 2: 7 window sizes vs 8 fade rates, E3 + E4, 10 seeds each).
+  - The user has questions about the LLM and rule-based controllers to raise in a separate 6c planning session.
+- ⚖️ *(Nov 18, Phase 6c design discussion + plan approved; `paper/plans/phase-6c.md` rev. 2)* **The controller design.**
+  - 🔍 **Two findings that shaped it** (MIND-small, seed 100, checked Nov 18):
+    - **γ is close to a dead knob in NB1 as published.** Random exploration plays are 0.41% of steps, and under Eq. 1 as printed
+      they never train a network. Raising γ after a drift costs clicks and teaches NB1 nothing.
+    - **Forgetting is NB1's real re-try mechanism.** Arms start at an estimate of ≈ 0.49 (0.42–0.58). Trained arms sit far lower
+      (mean of shown arms 0.23 with plain NB1). Fading lifts them toward the start (0.35 at fade 1/20k), so arms nothing has
+      reinforced lately outrank the favourite and get re-tried. Same mechanism as the dead-arm trap (a stuck arm at ≈ 0.5).
+  - **Design:**
+    - **Three layers:** NB1 always fades slowly; Page-Hinkley (PH) watches NB1's **surprise** (reward − its estimate for the played
+      arm) for a drop; on an alarm a decision-maker boosts the fade rate for a while, then returns to the slow rate.
+    - **Event-triggered:** this replaces README's "every N rounds", and the LLM is called only on alarms (cost).
+    - **PH, not ADWIN:** PH detects drops only. ADWIN's natural output is a window, and windows mean rebuilds and the dead-arm trap.
+      Our design is the gradual-forgetting counterpart of ADWIN's adaptive idea, with no rebuild (paper line).
+  - **Versions:**
+    - **A** = rules with sparse PH (boosts ≤ 10% of a calm MIND-small run);
+    - **B** = rules with sensitive PH (≤ 30%);
+    - **C** = sensitive PH + LLM (6d);
+    - **D** = Jev (optional);
+    - **−detector** = LLM on a schedule with matched calls, **required**;
+    - **−adaptive exploration**;
+    - **−forgetting**.
+  - **Rules:** boost 1/20k for 20k steps on both datasets; alarms ignored during a boost; PH reset after it.
+  - **LLM's menu:** {1/10k, 1/20k, 1/50k}, each for one memory length. Disclosure: fixed after the fixed-fade E4 results were known.
+  - **PH settings:** river defaults (δ = 0.005, min_instances 30) except mode "down", alpha = 1 (Gama et al.'s formula has no
+    fading), and λ from the boosted-share budget. Gama et al. (§3.2.1, App. A Alg. 1) give no value for δ; river's docs give no
+    source for their defaults.
+  - **The LLM never changes PH's settings** (C and B see the same alarms). LLM-tuned detection is future work.
+  - **Judging (no new pass/fail gate; lesson from 6b part 2):** every version is reported on E3 clicks, clicks lost per shift and
+    adaptation time vs NB1 and the slow fade. Claims written in advance:
+    - "the controller helps" if a version loses clearly fewer clicks per shift than the slow fade (2 × SE) with no clear click drop;
+    - "the LLM helps" if C does so better than both rules versions;
+    - otherwise "matched".
+  - **Dropped:** headlines/topics as LLM input (clashes with R6: no category names). Jev (TypeSafe, Sept 2026) reviewed: cheap and
+    typed, but its vendor says it is weak at arithmetic, it is not deterministic, and it has no paper. So it is an optional extra
+    controller; a text LLM is the main one (6d).
+  - **Why per-step budgets:** a MIND-small day is ≈ 30k steps, so per-day budgets with 20k-step boosts would have made A and B
+    near-constant fast fades (found by the fresh-context review).
 - ⚖️ *(Nov 16, Phase 5c Q3)* If NB3's lock-on reappeared on MIND it would be reported, not fixed (the
   baseline is NB3 as published) — it did reappear (69%).
 - ⚖️ *(Nov 16, Phase 5 Q17)* Because regret = steps − reward on MIND, the **independent** MIND evidence of
@@ -833,7 +1012,278 @@ Legend: 📄 paper/source fact · ⚖️ decision · 🔍 finding · 📊 result
   done in 12 min; NB2/NB3 ≈ 50 min per wave of 8). `make_recovery.py e4` takes 47 s. Lesson: other apps
   (Docker's VM, Chrome) had filled RAM and swap, and the workers ran at ~30% CPU until they were closed —
   check free memory before a long batch.
-- 📊 **Test counts:** Phase 5d: 82. Phase 1: 18; Phase 4: 57; Phase 5b: 73 (incl. the permanent 5k-step Forest Cover
+- 📊 *(Nov 18, Phase 6a build)* **NeuralUCB built** (`models/relu_net.py`, `exploration/ucb.py`,
+  `algorithms/neuralucb.py`; numpy, hand-written backprop). Checks: hand gradients = finite differences, and =
+  torch autograd to ≤ 1.7e-16 on a MIND-sized net (K 16, d 19, m 100; one-time `uv run --with torch`, torch not
+  added to requirements); the paired init = the paper's literal doubled-input form step for step (f, bonus,
+  several SGD steps) in a test. Speed after round 2000 (one job alone, MIND-small): ≈ 160–180 µs/step (the first
+  2,000 rounds train every round: ≈ 17 s per run). Sanity (MIND-small seed 100, steps 2k–32k, J 10, λ 10⁻², η 2·10⁻²):
+  γ = 0.01 → 42.5% clicks, exploration rate 0.6%; **γ = 0.1 → 45.4% in steps 22–32k** (LinUCB's whole-pass rate on
+  small: 43.7%), 7.9%; γ = 1 → 34.7%, 45% — the bonus must be tuned (as planned).
+- 🔍 *(Nov 18, Phase 6a review)* `/simplify` (4 reviewers): one diagnostics helper, LinUCB-style masking in select
+  (same RNG draws), batch grouped by arm once (≈ 17% faster SGD step), `.take` gathers, int16 arm buffer; divergence
+  handling made general (`diverged` column only when something diverged → earlier CSVs keep their shape;
+  `make_recovery` drops an algorithm with any diverged run; `make_mind_figures.py` takes result-set names).
+  Phase 5 CSVs re-generated byte-identical. `/code-review` (5 findings): fixed — J, batch, m written into every 6a
+  config so the saved-run key records them (else a changed code default could reuse stale runs); assert even m
+  (paired init). Skipped with reasons: test writes into `results/` (cleaned in `finally`); diverged runs' seconds
+  include data loading; UCB score in the algorithm (bonus is in `exploration/`, as LinUCB's precedent).
+- 📊 *(Nov 18, Phase 6a rehearsal, `results/phase6a_rehearsal_jcheck.log`)* MIND-small seed 100 no-shift vs shifts
+  50k/100k/150k: rewards identical before 50k, differ after; Forest 50k stationary vs rotation at 25k: identical before
+  25k; `make_recovery.py trial_6a` wrote every output. Mechanics only (γ = 1 setting; nothing tuned from it).
+- 📊 *(Nov 18, Phase 6a J check — pre-registered rule, R3)* γ 1, λ 10⁻², η 2·10⁻², seeds 100–102, 6 jobs in parallel:
+
+  | | J = 10 | J = 50 | diff | 2 × SE | s/run (J 10 / 50) |
+  |---|---|---|---|---|---|
+  | MIND-small click rate | 0.3594 | 0.3644 | +0.0051 | 0.0041 | 130 / 258 |
+  | Forest 500k accuracy | 0.5949 | 0.6079 | +0.0130 | 0.0053 | 330 / 647 |
+
+  → **J = 50 is clearly better on both** (more training per retrain pays). User's rule (Nov 18, at approval): take the
+  clearly better J unless "mega slow" (tuning > ≈ 12 h); measured J = 50 tuning ≈ 5.5 h → **J = 50 used** for tuning
+  and the full runs (paper: J = 1000; still a cost deviation). Full runs at J = 50 ≈ 4.5–5 h (vs 2.5 h planned).
+- 📊 *(Nov 18, Phase 6a MIND tuning stage 1)* 128 settings, seed 100, J 50, 8 jobs in parallel: **0 of 128 diverged**
+  (the η/m step, R1, holds across the full paper grid). ≈ 570 s/run with 8 jobs in parallel (vs 258 s with 6 jobs at the J check),
+  128 runs in ≈ 2.5 h. Top 5 by mean reward (seed 100): γ 0.1 λ 0.1 η 0.2 = 0.4186; γ 0.1 λ 1e-4 η 0.05 = 0.4162;
+  γ 0.01 λ 0.01 η 0.2 = 0.4158; γ 0.01 λ 0.1 η 0.2 = 0.4157; γ 0.1 λ 0.1 η 0.05 = 0.4156. These are near-ties
+  (spread 0.003). Small γ (≤ 0.1) clearly beats γ ≥ 1: γ 10 gives ≈ 0.19–0.20, so heavy exploration is costly on MIND.
+  Stage 2 (seeds 101–102) has started: `configs/phase6a_tune_mind_top5.yaml`.
+- 📊 *(Nov 18, Phase 6a MIND tuning stage 2, seeds 100–102)* 3-seed means: **γ 0.1 λ 0.1 η 0.2 = 0.4175 (SD 0.0010) → MIND
+  setting**; γ 0.1 λ 0.1 η 0.05 = 0.4158; γ 0.01 λ 0.1 η 0.2 = 0.4156; γ 0.1 λ 1e-4 η 0.05 = 0.4145; γ 0.01 λ 0.01 η 0.2 = 0.4115.
+  The seed-100 winner holds up on the other seeds.
+  ⚠️ **Finding:** tuned NeuralUCB is *below* the tuned baselines on MIND-small in the same tuning protocol: LinUCB
+  α 0.5 = 0.4367 (Phase 5), NB1 C 1 λ 1 = 0.4460 (Phase 5c), against NeuralUCB 0.4175. γ 0.01 and γ 0.1 score about the same,
+  so the gap points to the network fit rather than to exploration. Candidate causes: J = 50 instead of the paper's 1000, and
+  retraining only every 100 steps after round 2000. For the user at the checkpoint.
+- 🔍 *(Nov 18, Phase 6a Forest tuning bug)* Forest stage 1 crashed at once (ZeroDivisionError in `select`). With η = 0.5,
+  the grid's largest step, Forest's 94 inputs (vs 19 on MIND) drive the weights so high that they stay finite while f or Z
+  overflow, so u = NaN. The weight check in `_train` missed this. Reproduced at 3,000 steps: every η = 0.5 setting
+  fails within the first steps (4 are caught by the weight check, 11 by NaN u). Smaller η is fine. Fix, under the approved R2 fail-fast rule:
+  `select` raises `Diverged` if any u is non-finite. Added test `test_nonfinite_scores_raise_diverged`, so 91 tests now.
+  MIND results are unaffected: a NaN u always crashed the run, and every MIND run completed. Forest stage 1 has been relaunched.
+- 📊 *(Nov 18, Phase 6b planning)* **Measured cost of a window on NB1** (throwaway prototype: every R steps a fresh
+  network is trained by one pass, in time order, over the stored Eq. 1 updates of the last W steps; one job alone, seed 100).
+  One replayed update ≈ 23 µs (MIND, C 1) / ≈ 49 µs (Forest, C 100); extra cost per step = W/R replayed updates.
+  MIND-small: plain NB1 0.4448 in 7 s; W 20k/R 5k 0.4345; W 50k/R 10k 0.4416 (24 s); W 100k/R 25k 0.4279.
+  Forest 200k: 0.7127 → 0.6972 (W 50k/R 10k; 12 s → 48 s). Estimate with W/R = 5: ≈ 12–15 min per MIND-large run in
+  parallel, so E3 + E4 × 10 seeds ≈ 45–60 min.
+  🔍 Every window lost to plain NB1 on MIND-small (one seed). Expected: a window pays off only where old data misleads.
+  The tuning rule for W is therefore the central 6b question.
+- 📊 *(Nov 18, Phase 6b build)* `nonstationary/window.py` (Notebook: arrays, trim keeps step > t − W) and
+  `NeuralBandit1SW` (logs NB1's Eq. 1 updates; retrain at the end of update when t % (W//5) = 0 and t > W; fresh
+  `MLPStack` from self.rng; one in-order replay with the forward pass recomputed). 8 new tests, 99 in total. /simplify:
+  simpler Notebook (trim moves the kept rows to the front) and a bulk read during replay. /code-review: 7 findings,
+  1 fixed (W < 5 raises), 6 skipped with reasons. **Rehearsal (MIND-small seed 100, W 20k):** shifted/unshifted pair
+  identical before 50k, first retrain at 24k as planned, 46 retrains, `make_recovery.py trial_6b` produced every
+  output. Click rate 0.4344 (no shift) vs plain NB1's 0.4448 on the same seed. **Largest window (synthetic, W 987k):**
+  one retrain of 987k rows takes 22.8 s alone (23 µs/row, as measured in planning); peak RSS 630 MB with the notebook's
+  capacity at 2.1M rows.
+- 📊 *(Nov 18, Phase 6b tuning, MIND-small, seeds 100–102, no shifts)* 3-seed mean click rate (SD):
+  NB1 (no window) 0.4460 (0.0010); W 10k 0.4257 (0.0015); W 20k 0.4342 (0.0002); W 50k 0.4392 (0.0021); W 100k 0.4400 (0.0010).
+  Every window is below plain NB1, more so the smaller it is (expected on shift-free data). Rule (Q4/R2): the best windowed W is 100k.
+  50k is within 2 × combined SE (diff 0.0008 < 0.0027) and 20k is not (0.0058 > 0.0012) → **W = 50k → MIND-large 493k** (× 9.868).
+- 🔍 *(Nov 18, Phase 6b, found before the checkpoint)* **A dead-arm trap after a reset.** A real MIND-large run (seed 0,
+  W 987k, alone) is identical to NB1 until its first reset (1.18M), then averages 0.360 / **0.206** (Random level) /
+  0.402 / 0.459 over the next four reset intervals, vs NB1's 0.437 / 0.444 / 0.401 / 0.461. Whole run: 0.428 vs 0.460.
+  - A control run that resets at the same steps but replays **all** history matches NB1 exactly (0.4600 vs 0.4600), so
+    the replay is correct and the loss comes from forgetting.
+  - Mechanism, from inspecting the weights: after the reset at 1,381,800 some arms' 1-hidden-unit nets end with output
+    weight ≈ 0 and hidden unit ≈ 0. Their output is then stuck near sigmoid(0) = 0.5, above every other arm (≈ 0.43), so
+    they are picked whenever shown, and their gradients (∝ h, ∝ w2) are ≈ 0, so they never correct. The run stays stuck
+    until the next reset. Online NB1, trained from the start of the week, had those arms' w2 at −2 to −3.
+  - MIND-small tuning runs show no stuck stretch (no 10k block below 0.25). The trap was seen on MIND-large only.
+  - Memory: one MIND-large job at W 987k peaks at 1.04 GB RSS (183 s alone); 8 parallel ≈ 8 GB on a 16 GB Mac.
+- ❓ *(Nov 18, user idea, optional, not decided)* **Window on NB2 as a small extra at the end.** Reasoning (untested):
+  NB2's committee holds slow learners (λ 0.01, 0.1) and big networks (C up to 100) that keep old data far more than NB1
+  (λ = 1), so a reset could restore more plasticity. EXP3 could also steer around a model stuck in the dead-arm trap.
+  Cost (estimate, not measured): replay through 15 models makes one windowed NB2 MIND-large run ≈ 4–5 h, so one W × E3 + E4
+  × 10 seeds ≈ 18 h. Cheaper variants: 5 seeds (≈ 9 h), reset every W instead of W/5 (≈ 6–7 h), or both (≈ 3–4 h).
+  It would use NB1's tuned W (not tuned for NB2, to be stated) and needs its own short plan with a timing run first. To be
+  decided only after 6c/6d, if time allows. Otherwise it goes in the paper as a limitation / future work: "the window was
+  tested on NB1, the fastest-adapting learner; slower committees like NB2 may benefit more."
+- 📊 *(Nov 18, Phase 6b results: MIND-large, 10 seeds, E3 + E4, 140 runs, 6 jobs, ≈ 3.5 h)* Outputs:
+  `results/phase6b_mind_{e3,e4}_*.csv`, `phase6b_mind_e4_{recovery,verdicts,table}.csv`,
+  `figures/mind_e4_6b_{recovery,regret}.png`, `figures/mind_e3_6b_{daily,regret}.png`. The Phase 5c figures are kept unchanged.
+  - **Done-checks pass:** all 140 runs are full length and finite; E4 = E3 bit-for-bit for the first 300k steps in all 70 pairs.
+  - **E3 click rate** (NB1 46.0%): W 10k 43.3, 20k 43.9, 50k 43.9, 99k 43.8, 197k 44.0, **493k 45.1**, 987k 43.3.
+    Every fixed window costs click rate on the real week. Around E3's natural jumps the windows mostly fall *further*
+    behind NB1 (e.g. W 50k: −1.3 → −8.4 points around ≈ 370k). The exception is the TV spike, where small windows close part of the gap.
+  - **Clicks lost per planted shift** (vs the same seed's E3 run; NB1 3,443 / 5,544 / 6,180): W 10k −26 / 68 / 303,
+    W 20k 33 / 337 / 392, W 50k −1,000 / −561 / 455. Small windows make the planted shifts nearly free.
+  - **Adaptation time** (R10 stopwatch; NB1 10.7k → 45.4k → 113k, slower with every shift): W 10k 0 / 0 / 3k,
+    20k 4k / 0 / 10k, 50k 10k / 8k / 10k, 99k 1k / 9k / 9k, 197k 10k / 9k / 29k, 493k 11k / 11k / 56k, 987k 11k / 45k / 51k.
+    **Windows ≤ 99k flatten NB1's slowdown**: they recover within ≈ 10k at every shift. This is evidence for the plasticity
+    explanation (Phase 5d), although the timing confound (later, weaker days) still applies.
+  - **Verdicts (pre-registered rule) vs NB1:** W 10k–197k "trade performance for robustness" at every shift (fewer clicks
+    lost, but fewer total E4 clicks: −3k to −10k per window; 197k is level at shift 3). **The headline W 493k "adapts
+    better" than NB1, NB2 and NB3 at all 3 shifts**, and than LinUCB at shifts 2–3 (shift 1 vs LinUCB = the 500k TV-spike
+    caveat, §7). Independent check that needs no twin: W 493k's E4 clicks per post-shift window vs NB1's are
+    +74 ± 441 / **+2,229 ± 213 / +2,368 ± 271** (2 × SE), i.e. level at shift 1 (no reset before 591.6k) and more at shifts 2–3.
+    Its overall E4 click rate equals NB1's (45.2%).
+  - 🔍 **The dead-arm trap is systematic, not random.** It hits the same reset point in (nearly) every seed, because it
+    is tied to the data slice the network is rebuilt from:
+    - **W 987k:** stuck ≈ 1.28M and 1.38–1.48M in all 10 E3 runs (135 blocks of 10k steps), never in E4.
+    - **W 197k:** 14 blocks in 9/10 E3 runs vs 3 in E4.
+    - **W 493k:** one 10k block at ≈ 890k (just after the reset at 887,400) in all 10 E4 runs; 2 in E3.
+    - **W 50k:** 2–3 blocks. **10k, 20k and 99k:** none.
+    - Plain NB1: none.
+    Because the planted relabelling changes which arms the slice favours, the trap can hit an E3 run and not its E4
+    twin, which makes "clicks lost" negative (W 197k shift 1 −10,906; W 987k shift 2 −34,097). For the large windows,
+    clicks lost is therefore confounded by the trap. The twin-free E4-clicks comparison above is the cleaner check.
+  - **Reading (as pre-registered):** a fixed blind window buys near-free recovery at the planted shifts, but loses clicks
+    the rest of the time. Small windows pay too much, large windows risk the trap. The tuned 493k is the one fixed size
+    that comes out ahead of NB1 after shifts while matching it overall on E4 (but 45.1% vs 46.0% on E3). This motivates
+    6c/6d: reset when a change is detected, keeping the window's recovery without its constant cost and without needless resets.
+- ⚠️ *(Nov 18, side-agent note, agreed)* **The W 493k "adapts better" result may partly be reset timing.** Resets
+  follow a fixed schedule (every 98,600 steps) that never lines up with the shifts, and the dead-arm trap hits specific
+  resets in almost every seed. So which size comes out ahead depends partly on where its resets happen to fall on the
+  data, which may be why 493k beats NB1 while 197k and 987k don't. **For the paper:** report it as one window size on one reset
+  schedule, not as a general property of W ≈ 493k. A check is possible but not run: the same W with the schedule offset
+  (e.g. the first reset shifted by R/2), E3 + E4, 10 seeds, ≈ 40 min. **Run (user, Nov 18):** `NeuralBandit1SW(offset=…)`
+  resets when (t − offset) % R == 0 (default 0, so earlier saved runs are unchanged; 1 new test, 100 in total).
+  Configs `phase6b_offset_mind_{e3,e4}` use W 493k with offset 49,300 = R/2, label `NB1-SW_W493k_off`; outputs via
+  `make_recovery.py e4_6b_off` (vs NB1-SW_W493k and every baseline). Same rule, seeds and shifts.
+  📊 **Result (17:02, 20 runs): the 493k win depends on reset timing.**
+  - **Original schedule:** E3 45.1%, E4 45.2%; post-shift E4 clicks vs NB1 +74 / +2,229 / +2,368; trap blocks E3/E4 2 / 10;
+    verdicts vs NB1 better / better / better.
+  - **Schedule moved by R/2:** E3 **42.6%**, E4 44.1%; post-shift E4 clicks vs NB1 −9 (±438) / **−14,312 (±3,639)** / +2,638 (±246);
+    trap blocks E3/E4 **94 / 69**; verdicts trades / trades / better.
+  - Same window size and data, rebuilds at different moments: the trap hits far more often and the result flips at shift 2.
+  - ⇒ The paper must **not** claim "a 493k window adapts better". Correct statement: a fixed blind window's outcome is
+    dominated by where its rebuilds land, through the dead-arm trap.
+  - The robust 6b findings are the small-window ones (10k–50k: near-zero clicks lost, recovery ≤ 10k, never or rarely trapped,
+    1–3 points lower click rate).
+  - This strengthens the case for 6b part 2 (gradual forgetting, no rebuilds).
+- 📊 *(Nov 18)* New figure `figures/mind_e4_6b_nb1_vs_windows.png`: one row per window size, NB1 (black) vs that window
+  (orange) at each shift. The all-lines `mind_e4_6b_recovery.png` is unreadable with 13 lines. Values above 1.0 are the
+  no-shift twin falling into the trap, not real gains.
+- ⚖️ *(Nov 18, user)* **No fix for the dead-arm trap inside the window.** Options weighed: a validation check that keeps
+  the old net unless the rebuilt one predicts recent held-out data better; several rebuilds keeping the best; pessimistic
+  init; re-initialising a stuck arm. All were rejected because they overlap with the controllers' job (deciding when and
+  whether to reset). The trap is reported as a 6b finding. The only related option kept is gradual forgetting (pull the
+  weights toward their initial values, close to the "shrink" in Dohare et al.'s Shrink and Perturb). It is already Q3b: its
+  own short plan after 6b, done only if time allows.
+  **Update (user, Nov 18): gradual forgetting becomes Phase 6b, part 2, and will definitely be done before 6c**, right after the
+  493k reset-timing check, with its own short plan (`paper/plans/phase-6b2.md`). Why it belongs in 6b: it is the other way to
+  forget old data (Gama et al. §3.1.2: abrupt vs gradual). If it wins, the 6c/6d controller sets a fade rate instead of W
+  (a documented deviation from the abstract's "sliding window"; ablation "−sliding window" → "−forgetting"). Estimated cost ≈ 2–3 h of work, < 1 h of compute (runs cost about as much as plain NB1).
+- 📊 *(Nov 18, Phase 6b part 2 build + rehearsal + tuning)*
+  - **Build:** `nonstationary/forgetting.py` (`fade_toward_init`, rejects ρ ∉ [0, 1)), `NeuralBandit1Fade`, and in
+    `evaluation/metrics.py` `trap_blocks`, `two_se`, `tradeoff_beats`, `beaten_windows` (the pre-registered rule, now tested).
+    Tests: 111 (12 new; shared toy stream in `tests/toy.py`).
+  - **/simplify:** shared test helpers, a simpler update-then-fade test, `two_se`. Skipped: moving the figure code and the label tables.
+    **/code-review:** 6 findings; 3 fixed (decision rule moved into a tested function, ρ validated, test added), 3 skipped (minor).
+  - **Rehearsal** (MIND-small seed 100, ρ = 1/20k): pair identical before 50k, traces saved (207 blocks), every output produced.
+    One MIND-large run alone: 88 s (43 µs/step), peak RSS 450 MB, so 8 parallel jobs are fine.
+  - **Tuning** (MIND-small, seeds 100–102, 3-seed mean ± SD):
+    - plain NB1 0.4460 ± 0.0010 (reference);
+    - fade 1/100k 0.4451 ± 0.0006; 1/50k 0.4432 ± 0.0006; 1/20k 0.4384 ± 0.0009; 1/10k 0.4307 ± 0.0020.
+    - As stated in advance, the paper's rule picks the slowest fade: **headline 1/100k → 1/987k on MIND-large**.
+    - At the same *nominal* memory each fade beats the matching window on calm data (window 10k 0.4257, 20k 0.4342, 50k 0.4392, 100k 0.4400).
+      This is consistent with R6 (a fade keeps more old data than a window of the same nominal memory). The trade-off rule decides, not this.
+- 📊 *(Nov 18, Phase 6b part 2 results: MIND-large, 8 fade rates × E3 + E4 × 10 seeds, 160 runs, 8 jobs, ≈ 1.3 h)* Outputs:
+  `results/phase6b2_{tradeoff,decision}.csv`, `phase6b2_mind_e4_{recovery,verdicts,table}.csv`,
+  `figures/mind_6b2_tradeoff.png`, `figures/mind_e4_6b2_fade_vs_windows.png`.
+  - **Done-checks pass:** all 160 runs are full length and finite; E4 = E3 bit-for-bit for the first 300k steps in all 80 pairs; Phase 5 / 6b
+    tracked outputs are unchanged.
+  - **Trade-off points** (E3 click rate; mean clicks lost per shift):
+    - NB1 45.97%, 5,056.
+    - Fades: 1/10k 43.33%, 44; 1/20k 44.25%, 504; 1/50k 45.01%, 858; 1/100k 45.45%, 1,367; 1/99k 45.45%, 1,341;
+      1/197k 45.71%, 1,769; 1/493k 45.91%, 2,564; **1/987k 45.96%, 3,172**.
+    - Windows: see the 6b entries.
+  - **Pre-registered decision: "window".** Fading beats only 1 of the 3 small windows (W 20k, by fade 1/20k: +0.32 points of E3
+    clicks, clicks lost a tie). W 10k: tie on both axes (fade 1/10k). W 50k: the fades with more clicks also lose more at shifts.
+    **Placebo OK:** plain NB1 beats 0 windows. So 6c/6d's controller sets the **window size**, as pre-registered.
+  - **The trap never fired for any fade:** 0 trap blocks in all 160 runs (windows: up to 135).
+  - **Fading vs plain NB1** (descriptive, Q11):
+    - Fades 1/197k, 1/493k and 1/987k "adapt better" than NB1 at **all 3 shifts** (pre-registered adapts-better rule).
+    - The headline 1/987k keeps NB1's E3 click rate (45.96% vs 45.97%) and loses **37% fewer clicks per shift** (3,172 vs 5,056).
+      Under the trade-off rule it **beats plain NB1**: equal clicks, fewer lost.
+    - Adaptation time (NB1 10.7k → 45.4k → 113k): 1/987k 10.1k / 15.5k / 42.3k; 1/99k 8.4k / 8.6k / 15.6k;
+      1/20k 3.1k / 6.8k / 10.5k. Every fade flattens NB1's slowdown, smoothly with its rate.
+  - **Reading:** the fades form a smooth curve from NB1 (no forgetting) to the small windows. They give up very little normal-time
+    performance for large gains at shifts, with no trap and no timing sensitivity. Against the *small* windows (which lose almost nothing at
+    shifts) fading does not dominate, so the pre-registered rule keeps the window for 6c/6d. Fading is, however, the **first component
+    that beats plain NB1 robustly** (no schedule luck). To raise in 6c planning (user decision): the pre-registered answer stands, but
+    whether 6c/6d should also offer the fade rate as a knob is a fair new question. **Resolved (user, Nov 18): fading is the
+  forgetting method and the controller sets the fade rate (§5 decision entry).**
+- 📊 *(Nov 18, Phase 6c step 1)* **Fixed-γ check** (`results/phase6c_gamma_check_summary.csv`; MIND-small, seeds 100–102,
+  NB1 + fade 1/100k, no shifts). 3-seed mean click rate ± SD:
+  - γ = 0: 0.4456 ± 0.0007;
+  - γ = 0.005 (paper): 0.4451 ± 0.0006;
+  - γ = 0.02: 0.4409 ± 0.0005;
+  - γ = 0.05: 0.4333 ± 0.0002.
+
+  Reading:
+  - **More exploration only costs clicks**, as expected: exploration plays never train NB1.
+  - **γ = 0 vs 0.005: no clear difference.** The gap is +0.0005 (2 × combined SE ≈ 0.0011), though γ = 0 is ahead on every one
+    of the 3 seeds.
+  - Under plan rule R2, no γ clearly beats 0.005, so **γ leaves the LLM's action menu**. A and C then have the same dials, and this
+    check is the "−adaptive exploration" evidence: in NB1 as published, the controller has nothing to gain from γ.
+- 🔍 *(Nov 18, Phase 6c build)* **river's Page-Hinkley equals Gama et al.'s Alg. 1 exactly** (drops version: mode "down",
+  alpha = 1). The first alarm step is identical at every λ tried on a synthetic drop (5, 10, 20, 30, 50, 80). The test is permanent
+  (`tests/test_page_hinkley.py`). On noise of ±0.5 per step, λ ≤ 20 already raises false alarms, so λ must be set by the budget.
+- 📊 *(Nov 18, Phase 6c steps 4–5)* **PH measurement and thresholds, PRE-REGISTERED before any MIND-large controller run**
+  (`scripts/measure_ph.py` → `results/phase6c_measure.csv`; `configs/phase6c_confirm_small.yaml`). MIND-small, seeds 100–102,
+  NB1 + fade 1/100k, no planted shifts.
+  - **Offline simulation over 25 λ values (10–2000):**
+    - **Rule:** the smallest λ with boosted share ≤ 10% / ≤ 30% on every seed.
+    - **Result:** **λ_A = 219.9**, 1 alarm per run (at ≈ 48k); **λ_S = 90.9**, 3 alarms (≈ 18k, 65k, 105k).
+  - **Confirmed by real controller runs** (boosts change NB1's path):
+    - **Boosted share:** A 9.6–9.7%, B 28.9–29.0%. Alarms land at the same steps as the offline simulation.
+    - **Calm-data cost vs the slow fade (0.4451):** A 0.4442 (−0.09 points), B 0.4429 (−0.22 points).
+  - 🔍 **Alarms track the week's real events:** at a given λ they fire at nearly the same step in all 3 seeds (≈ 17–18k, 48k, 65k,
+    88k, 105k, 127k, 148k), so they follow MIND's natural drift, not noise.
+  - 🔍 **Alarm count is not monotonic in λ** (λ 219.9 gives 1 alarm, 274.2 gives 2): an early alarm's 20k-step boost can swallow a
+    later one. The pre-stated "smallest λ" rule is applied as written.
+  - 🔍 **NB1's surprise is slightly positive on average** (+0.00 to +0.06 per 10k block, seed 100): NB1 slightly *under*-estimates
+    the arms it plays. The review expected a negative bias; it isn't there.
+  - ⚠️ **Open (side-agent note):** the per-step threshold may not carry over to MIND-large unchanged. The same week has ≈ 9.9× the
+    steps, and the base fade is 1/987k there. MIND-large must not be used to adjust it, so a fallback must be decided before the runs.
+- 📄 *(Nov 18, Phase 6c step 2)* **Page 1954 read in full** (published JSTOR version; REFERENCES_VERIFICATION R9, C55–C58).
+  - **It supports our threshold rule:** Page measures a detector by its average run length (A.R.L.). On good quality the A.R.L. is
+    the cost of false alarms, which are unavoidable ("probability of one"). Page picks a scheme by fixing the A.R.L. on good
+    quality and making detection fast on bad quality (§1.2, §5.2). That is our alarm budget on data without planted shifts.
+  - **One-sided by design** (§2.1), as our drops-only `mode="down"`.
+  - ⚠️ **Citation detail:** the Page-Hinkley form (deviations from a running mean, tolerance δ) is not in Page 1954. Page's CUSUM
+    uses fixed scores chosen to drift down when all is well. We cite PH as Gama et al. (§3.2.1, App. A) and Page 1954 as the
+    CUSUM origin.
+- 📊 *(Nov 19, Phase 6c results: MIND-large, A and B × E3 + E4 × 10 seeds, 40 runs, 8 jobs)* Outputs: `results/phase6c_mind_{e3,e4}_*.csv`,
+  `phase6c_mind_e4_{recovery,verdicts,table}.csv`, `figures/mind_e4_6c_{recovery,regret}.png`; log `results/phase6c_full.log`.
+  - **Done-checks pass:** 40 runs complete and finite; E4 = E3 bit-for-bit for the first 300k steps in all 20 pairs.
+  - **Clicks lost per planted shift** (mean ± SD; 2 × SE vs the slow fade):
+
+    | | Shift 1 | Shift 2 | Shift 3 | Mean |
+    |---|---|---|---|---|
+    | NB1 | 3,443 | 5,544 | 6,180 | 5,056 |
+    | Slow fade 1/987k | 2,552 ± 396 | 3,171 ± 214 | 3,794 ± 209 | 3,172 |
+    | **A** | 1,910 ± 747 | 2,573 ± 230 | 1,888 ± 369 | **2,124** |
+    | **B** | 1,932 ± 1,175 | 3,195 ± 622 | 1,884 ± 310 | 2,337 |
+
+    - A loses **clearly fewer** clicks than the slow fade at all 3 shifts: −33% on average, and −58% vs plain NB1.
+    - B is clearly better at shifts 1 and 3 and level at shift 2.
+  - **Adaptation time** (R10):
+    - NB1: 10.7k / 45.4k / 113k;
+    - slow fade: 10.1k / 15.5k / 42.3k;
+    - **A: 10.0k / 10.5k / 36.4k**;
+    - B: 9.9k / 10.5k / 28.7k.
+  - **Click rate:**
+    - **E3 (real week):** A 45.79%, B 45.74% vs slow fade 45.97% and NB1 45.97%. That is −0.18 / −0.22 points, both **clear**
+      (2 × SE ≈ 0.03).
+    - **E4 (drift data):** A 45.47% = slow fade 45.47% (no clear difference); B 45.39% (−0.08, clear).
+  - **Alarms on MIND-large** (λ from MIND-small, unchanged, R8):
+    - A: 5.4 per E3 run, 5.5 per E4 run; boosted share 5.3% (target 10%).
+    - B: 7.3 / 10.1 per run; boosted share 7–10% (target 30%).
+    - The MIND-small calibration carried over **conservatively**, with fewer boosts than budgeted.
+    - **C's call budget ≈ 7–10 LLM calls per run**, so −detector gets the same.
+  - **Reading against the pre-written claims (R3):**
+    - **"The controller helps" is NOT met as written.** A loses clearly fewer clicks at every shift and adapts faster, but costs a
+      clear 0.18 points on the real week. It is a **trade**: on the drift data overall it ties the slow fade.
+    - The cost on E3 comes from boosts at **natural news events**: ≈ 5 alarms per E3 run, where the week has no planted shift.
+    - This is exactly the gap the LLM is meant to close (6d): **keep A's shift gains while skipping the natural-event boosts.**
+      The bar for C: E3 clicks within noise of the slow fade (45.97%), and clicks lost per shift ≤ A's ≈ 2.1k.
+    - B is no better than A: more alarms, more cost, same gain. Extra alarm sensitivity alone doesn't help the rules.
+- 📊 **Test counts:** Phase 6c build + review: 121 (code-review fixes: invalid decisions count as no change; controllers are named
+  and the boost is a config param, so both are in the saved-run key; no-change alarms are logged as NaN). Phase 6b part 2: 111. Phase 6b: 99. Phase 6a: 91. Phase 5d: 82. Phase 1: 18; Phase 4: 57; Phase 5b: 73 (incl. the permanent 5k-step Forest Cover
   exact-match test).
 - 🔍 *(Phase 3–4)* Overflow-safe sigmoid (`scipy.special.expit`), so even ×1,400 updates can't overflow;
   `check_finite` extended in Phase 4 to look inside the committee's stacks and EXP3s (fixes the Phase 3

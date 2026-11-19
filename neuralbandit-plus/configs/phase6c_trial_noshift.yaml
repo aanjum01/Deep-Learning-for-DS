@@ -1,0 +1,10 @@
+# Phase 6c rehearsal (plan phase-6c.md step 6): MIND-small, seed 100, no-shift twin. Mechanics only - nothing is tuned from it.
+# A/B = slow fade 1/100k + PH (lambda 219.9 / 90.9, pre-registered from scripts/measure_ph.py) + rule boost 1/20k for 20k steps.
+name: phase6c_trial_noshift
+env: mind_small
+seeds: [100]
+
+algorithms:
+  - {label: NB1-Fade_100k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00001}}
+  - {label: NB1-Ctrl_A, class: NeuralBandit1Ctrl, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00001, threshold: 219.9, controller: rule, boost_rho: 0.00005, boost_length: 20000}}
+  - {label: NB1-Ctrl_B, class: NeuralBandit1Ctrl, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00001, threshold: 90.9, controller: rule, boost_rho: 0.00005, boost_length: 20000}}

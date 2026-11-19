@@ -1,0 +1,14 @@
+# Phase 6b2: NB1-Fade on the real MIND week. 10k/20k/50k/100k = count-based rho; 99k/197k/493k/987k = time-span (exactly 1/99,000 etc., R11, matching the 6b windows).
+# Rates are plain decimals so PyYAML reads floats (R10). Baselines are not rerun: saved runs in phase5c_mind_e3 / phase5d_mind_e4.
+name: phase6b2_mind_e3
+env: mind_large
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+algorithms:
+  - {label: NB1-Fade_10k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.0001}}  # 1/10k
+  - {label: NB1-Fade_20k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00005}}  # 1/20k
+  - {label: NB1-Fade_50k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00002}}  # 1/50k
+  - {label: NB1-Fade_100k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00001}}  # 1/100k
+  - {label: NB1-Fade_99k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.0000101010101}}  # 1/99,000
+  - {label: NB1-Fade_197k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00000507614213}}  # 1/197,000
+  - {label: NB1-Fade_493k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00000202839757}}  # 1/493,000
+  - {label: NB1-Fade_987k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00000101317123}}  # 1/987,000

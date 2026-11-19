@@ -1,0 +1,10 @@
+# Phase 6a J check (plan phase-6a.md R3): NeuralUCB with J = 10 vs 50 SGD steps per training call, Forest Cover stationary 500k.
+# Tuning seeds 100-102 are never used for reported results.
+name: phase6a_jcheck_forest
+steps: 500000
+seeds: [100, 101, 102]
+drift_every: null
+algorithms:
+  # gamma 1, lambda 0.01, eta 0.02: paper-grid middle setting for the J check (phase-6a R3); J = SGD steps per training call
+  - {label: NUCB_J10, class: NeuralUCB, params: {gamma: 1, lam: 0.01, eta: 0.02, J: 10, batch: 500, m: 100}}
+  - {label: NUCB_J50, class: NeuralUCB, params: {gamma: 1, lam: 0.01, eta: 0.02, J: 50, batch: 500, m: 100}}

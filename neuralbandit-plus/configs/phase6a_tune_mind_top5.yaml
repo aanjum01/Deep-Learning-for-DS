@@ -1,0 +1,11 @@
+# Phase 6a tuning stage 2 (plan phase-6a.md Q6, R3/R4): MIND-small top 5 of stage 1 (seed 100, ranked by mean_reward,
+# none diverged) on seeds 101-102. Winner = best 3-seed mean (seeds 100-102).
+name: phase6a_tune_mind_top5
+env: mind_small
+seeds: [101, 102]
+algorithms:
+  - {label: NUCB_g0.1_l0.1_e0.2, class: NeuralUCB, params: {gamma: 0.1, lam: 0.1, eta: 0.2, J: 50, batch: 500, m: 100, d: 19}}
+  - {label: NUCB_g0.1_l0.0001_e0.05, class: NeuralUCB, params: {gamma: 0.1, lam: 0.0001, eta: 0.05, J: 50, batch: 500, m: 100, d: 19}}
+  - {label: NUCB_g0.01_l0.01_e0.2, class: NeuralUCB, params: {gamma: 0.01, lam: 0.01, eta: 0.2, J: 50, batch: 500, m: 100, d: 19}}
+  - {label: NUCB_g0.01_l0.1_e0.2, class: NeuralUCB, params: {gamma: 0.01, lam: 0.1, eta: 0.2, J: 50, batch: 500, m: 100, d: 19}}
+  - {label: NUCB_g0.1_l0.1_e0.05, class: NeuralUCB, params: {gamma: 0.1, lam: 0.1, eta: 0.05, J: 50, batch: 500, m: 100, d: 19}}

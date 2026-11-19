@@ -1,0 +1,4 @@
+algorithm,shift,window,clicks_lost_mean,clicks_lost_std,shifted_clicks_mean,click_rate,entered_at,max_loss,recovered,duration,since_shift
+NeuralUCB,1,"[50000, 100000)",4171.0,,14779.0,0.29558,1.0,0.3889028370574943,False,48993,50000
+NeuralUCB,2,"[100000, 150000)",7318.0,,10872.0,0.21744,0.8604192355117138,0.5118290511320276,False,50000,50000
+NeuralUCB,3,"[150000, 200000)",2715.0,,16392.0,0.32784,0.6599735799207398,0.4243444791917248,False,57406,57406

@@ -1,0 +1,10 @@
+# Phase 6c step 5 (plan phase-6c §4): real controller runs on MIND-small (seeds 100-102, no shifts) at the thresholds picked by
+# scripts/measure_ph.py (offline): lambda_A = 219.9 (boosted <= 10%), lambda_S = 90.9 (<= 30%). Base fade 1/100k; boost 1/20k for 20k steps.
+# Confirms the boosted share with boosts changing NB1's path; the slow fade alone is the reference.
+name: phase6c_confirm_small
+env: mind_small
+seeds: [100, 101, 102]
+algorithms:
+  - {label: Fade100k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00001}}
+  - {label: NB1-Ctrl_A, class: NeuralBandit1Ctrl, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00001, threshold: 219.9, controller: rule, boost_rho: 0.00005, boost_length: 20000}}
+  - {label: NB1-Ctrl_B, class: NeuralBandit1Ctrl, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00001, threshold: 90.9, controller: rule, boost_rho: 0.00005, boost_length: 20000}}

@@ -1,0 +1,8 @@
+# Phase 6a rehearsal (plan phase-6a.md section 7.3): Forest Cover stationary, 50k steps. Mechanics only - nothing is tuned from it.
+name: phase6a_trial_fstat
+steps: 50000
+seeds: [100]
+drift_every: null
+algorithms:
+  # gamma 1, lambda 0.01, eta 0.02: paper-grid middle setting for the J check (phase-6a R3); J = SGD steps per training call
+  - {label: NeuralUCB, class: NeuralUCB, params: {gamma: 1, lam: 0.01, eta: 0.02, J: 10, batch: 500, m: 100}}

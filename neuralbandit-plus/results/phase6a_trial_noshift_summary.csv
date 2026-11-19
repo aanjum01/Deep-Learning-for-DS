@@ -1,0 +1,2 @@
+label,seed,mean_reward,last100k_acc,final_regret,seconds,steps_per_sec_parallel
+NeuralUCB,100,0.36242442359430294,0.37672,132237,51.08058312512003,4060.3686824006404

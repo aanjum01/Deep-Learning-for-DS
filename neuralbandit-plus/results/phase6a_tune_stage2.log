@@ -1,0 +1,66 @@
+== mind_top5 04:14:32
+                         mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                                          
+NUCB_g0.1_l0.1_e0.2         0.416938      120840.5           0.402975          0.001704              372.243674
+NUCB_g0.1_l0.0001_e0.05     0.413587      121534.5           0.400970          0.002673              371.697387
+NUCB_g0.01_l0.01_e0.2       0.409437      122394.5           0.396245          0.005339              382.578823
+NUCB_g0.01_l0.1_e0.2        0.415491      121140.0           0.402395          0.000940              377.555511
+NUCB_g0.1_l0.1_e0.05        0.415980      121039.0           0.400535          0.000134             1308.546070
+== free: System-wide memory free percentage: 65%
+== tune_forest 04:26:12
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: overflow encountered in square
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/exploration/ucb.py:26: RuntimeWarning: invalid value encountered in multiply
+  return idx, x[idx] ** 2, m * w2 ** 2 * (z > 0), m * np.maximum(z, 0) ** 2
+joblib.externals.loky.process_executor._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/externals/loky/process_executor.py", line 490, in _process_worker
+    r = call_item()
+        ^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/externals/loky/process_executor.py", line 291, in __call__
+    return self.fn(*self.args, **self.kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/parallel.py", line 607, in __call__
+    return [func(*args, **kwargs) for func, args, kwargs in self.items]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/parallel.py", line 607, in <listcomp>
+    return [func(*args, **kwargs) for func, args, kwargs in self.items]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/scripts/run_experiment.py", line 51, in job
+    rewards, best, secs, diag = run_one(CLASSES[a["class"]], a["params"], seed, steps, drift_every, env, shifts)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/evaluation/runner.py", line 76, in run_one
+    rewards = run(policy, stream)
+              ^^^^^^^^^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/evaluation/runner.py", line 26, in run
+    a = policy.select(x)
+        ^^^^^^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/algorithms/neuralucb.py", line 60, in select
+    self.last_probs[best] = 1.0 / len(best)
+                            ~~~~^~~~~~~~~~~
+ZeroDivisionError: float division by zero
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/scripts/run_experiment.py", line 61, in <module>
+    outs = Parallel(n_jobs=-1)(delayed(job)(a, s) for _, s, a in jobs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/parallel.py", line 2098, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/parallel.py", line 1704, in _get_outputs
+    yield from self._retrieve()
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/parallel.py", line 1806, in _retrieve
+    self._raise_error_fast()
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/parallel.py", line 1885, in _raise_error_fast
+    error_job.get_result(self.timeout)
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/parallel.py", line 780, in get_result
+    return self._return_or_raise()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aanjum/Desktop/M.S.DS Columbia/Fall 2026/Deep Learning/Deep-Learning-for-DS/neuralbandit-plus/.venv/lib/python3.11/site-packages/joblib/parallel.py", line 795, in _return_or_raise
+    raise self._result
+ZeroDivisionError: float division by zero
+== done 04:26:15

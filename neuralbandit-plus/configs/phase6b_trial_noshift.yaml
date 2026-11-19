@@ -1,0 +1,7 @@
+# Phase 6b rehearsal (plan phase-6b.md section 7, item 2): no-shift twin, MIND-small, seed 100. Mechanics only - nothing is tuned from it.
+# W = 20000 (R = 4000 derived, Q3).
+name: phase6b_trial_noshift
+env: mind_small
+seeds: [100]
+algorithms:
+  - {label: NB1-SW_W20k, class: NeuralBandit1SW, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, W: 20000}}

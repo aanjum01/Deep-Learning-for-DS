@@ -1,0 +1,8 @@
+            mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                             
+NB1-Ctrl_A     0.457897     1107877.2           0.469905          0.000843             7589.706063
+NB1-Ctrl_B     0.457419     1108854.0           0.469478          0.001110             9623.252048
+            mean_reward  final_regret  last100k_acc_mean  last100k_acc_std  steps_per_sec_parallel
+label                                                                                             
+NB1-Ctrl_A     0.454685     1114440.6           0.469867          0.000990             5783.769000
+NB1-Ctrl_B     0.453917     1116010.8           0.469635          0.001139             8751.282026

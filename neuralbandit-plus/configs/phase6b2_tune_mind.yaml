@@ -1,0 +1,11 @@
+# Phase 6b2 tuning (plan phase-6b2.md): NB1-Fade on MIND-small, one pass, no shifts, seeds 100-102. rho = 1/memory (count-based 10k/20k/50k/100k).
+# NB1 settings as phase5c. Plain NB1 is the no-fade reference. Rates are plain decimals (R10).
+name: phase6b2_tune_mind
+env: mind_small
+seeds: [100, 101, 102]
+algorithms:
+  - {label: NB1, class: NeuralBandit1, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19}}
+  - {label: NB1-Fade_10k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.0001}}  # 1/10k
+  - {label: NB1-Fade_20k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00005}}  # 1/20k
+  - {label: NB1-Fade_50k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00002}}  # 1/50k
+  - {label: NB1-Fade_100k, class: NeuralBandit1Fade, params: {hidden: 1, lam: 1, gamma: 0.005, d: 19, rho: 0.00001}}  # 1/100k

@@ -3,10 +3,23 @@
 ## Project
 Reproduce Allesiardo, Féraud & Bouneffouf (2014), "A Neural Networks Committee for the
 Contextual Bandit Problem" (NeuralBandit1/2/3), then extend it as NeuralBandit++:
-NeuralUCB + sliding-window memory + an LLM controller (drift monitor, memory manager,
-exploration tuner agents) that adjusts settings every N rounds while NeuralUCB picks actions.
-Goal: faster adaptation after concept drift. Datasets: UCI Forest Cover Type, Microsoft MIND-small.
+**NB1** + gradual forgetting (weights fade toward their initial values, "L2 Init") + an LLM controller
+(drift monitor, memory manager, exploration tuner agents) that adjusts settings every N rounds (NB1's
+**fade rate** and exploration rate γ) while NB1 picks actions.
+Goal: faster adaptation after concept drift. Datasets: UCI Forest Cover Type, Microsoft MIND.
 Full plan, experiments (E1–E4) and metrics: see README.md.
+
+**Base learner changed from NeuralUCB to NB1 (Nov 18, professor-approved, see RESEARCH_LOG §5).** The approved
+abstract still says NeuralUCB. Where it differs, this file and the research log are what count:
+(1) NB1 is the base, not NeuralUCB; (2) exploration is drift-adaptive (the controller sets one global γ), not a
+per-context uncertainty bonus; (3) no regret-guarantee claim; (4) ablation "−UCB" → "−adaptive exploration";
+(5) **"sliding window memory" → gradual forgetting** (user, Nov 18, after 6b / 6b part 2): fading met the paper's goal (faster
+adaptation than NB1, same clicks, never trapped); the window cost clicks, hit the dead-arm trap and depended on rebuild
+timing. The window stays in the paper as the forgetting method tried and rejected; ablation "−sliding window" → "−forgetting".
+**Judge every rule and result against the primary question first:** adapt faster after drift than NB1 without losing clicks.
+The professor's requirement (Nov 18): appropriate baselines plus ablations that show each component's contribution.
+Phase 6a (NeuralUCB) is **closed** (user, Nov 18). It was built, reviewed and tuned on MIND-small, and has no full runs.
+In the paper it is the method tried and replaced. Do not run or extend it.
 
 ## Deadlines
 - Paper (6–8 pp, ACM WWW format) + this repo: working target Sun Nov 29, 2026, 11:59 PM (official: Dec 1)
@@ -20,11 +33,15 @@ Full plan, experiments (E1–E4) and metrics: see README.md.
   Banditron and CTS are NOT built.
 - Every baseline runs in every environment the method runs in (slide: "identical environments and
   evaluation protocols") — Forest Cover AND MIND, not just Figure 1.
-- Ablations = core 4 only: −LLM controller; LLM → rule-based controller; −UCB; −sliding window.
-  Run on MIND E3 + E4 only (user, Nov 17); E2 only if time allows. Full model + NeuralUCB alone run E1–E4.
-- Phase 6 = modular sub-phases 6a–6f (user, Nov 17; RESEARCH_LOG §5): 6a NeuralUCB alone, 6b + window,
-  6c rule-based controller, 6d LLM controller → full model, 6e ablations, 6f stats/figures. Optional last:
-  window/LLM on NB1.
+- Ablations = core 4 only, each removing one piece from the full model (NB1 + fading + controller): −controller
+  (NB1 + fixed fade; done in 6b part 2); LLM → rule-based controller; −adaptive exploration (controller may not change γ;
+  was "−UCB" before Nov 18); −forgetting (controller sets γ only, no fade; was "−sliding window" before Nov 18).
+  The window is not re-tested in the ablations (not part of the final model; 6b is the design comparison). Run on MIND E3 + E4 only (user, Nov 17); E2 only if time allows. The full model runs E1–E4.
+- Phase 6 = modular sub-phases (user, Nov 17; base changed to NB1 on Nov 18): 6a NeuralUCB alone (CLOSED: built, tuned
+  on MIND-small, no full runs; replaced by NB1), 6b NB1 + window (DONE: reset + retrain, `NeuralBandit1SW`; results phase6b_mind_e3/e4), 6b part 2 gradual
+  forgetting (DONE: `NeuralBandit1Fade`, plan `paper/plans/phase-6b2.md`; **chosen as the forgetting method**, user Nov 18;
+  the pre-registered pairwise rule favoured the small windows and is reported in one line), 6c rule-based controller (DONE: `NeuralBandit1Ctrl`, plan `paper/plans/phase-6c.md`; slow fade + Page-Hinkley alarm
+  on NB1's surprise + fixed boost 1/20k for 20k steps; A λ 219.9, B λ 90.9 set on MIND-small; γ dropped from the controller, R2), 6d LLM controller → full model, 6e ablations, 6f stats/figures.
 - "Common toolkit" integration: deferred — do not raise it until the user does.
 
 ## How we work (MANDATORY) — the phase loop
@@ -147,6 +164,11 @@ algorithms/ models/ exploration/ nonstationary/ llm/ evaluation/
   (a+j) mod 16); every method needs a paired E3 + E4 run per seed. Deciding number = clicks lost per shift
   (500k window, vs same-seed E3) with the pre-registered `adapts_better` rule; adaptation time = R10 stopwatch
   on 10-seed mean curves. `scripts/make_recovery.py {e4|forest|trial}`. E4 results: phase5d_mind_e4.
+- 6b (plan `paper/plans/phase-6b.md`): `NeuralBandit1SW(W)` logs NB1's Eq. 1 updates in `nonstationary/window.py`'s
+  Notebook; every W//5 steps once t > W it rebuilds a fresh net from the last W steps (one in-order replay). W can be
+  changed and `retrain()` called from outside (6c/6d). Tuned W = 50k on MIND-small → 493k on MIND-large (× 9.868 = same
+  span of the week). Known risk: the "dead-arm trap" after a reset (RESEARCH_LOG §6). `run_experiment.py --jobs N` (use 6
+  for big-window MIND-large batches: ≈ 1 GB per job).
 - Reference repo TheAmazingElys/NeuralBandit: no license, unfinished (no NB2/NB3), never copy code,
   and **never a source for any decision** — the 2014 paper is the source of truth; where the repo
   differs (biases, no importance weighting, momentum, γ = 0.05), follow the paper (user, Nov 15).

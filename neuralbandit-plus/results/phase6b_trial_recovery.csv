@@ -1,0 +1,4 @@
+algorithm,shift,window,clicks_lost_mean,clicks_lost_std,shifted_clicks_mean,click_rate,entered_at,max_loss,recovered,duration,since_shift
+NB1-SW_W20k,1,"[50000, 100000)",194.0,,22020.0,0.4404,1.0,0.033866611261167634,True,0,0
+NB1-SW_W20k,2,"[100000, 150000)",282.0,,19920.0,0.3984,0.9980481457384515,0.06494117647058828,True,6786,12183
+NB1-SW_W20k,3,"[150000, 200000)",347.0,,21926.0,0.43852,0.994047619047619,0.09504595382201297,True,9814,10969
